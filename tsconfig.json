@@ -1,0 +1,23 @@
+{
+    "files": [
+        "src/engine/game.ts",
+        "src/engine/state.ts",
+        "src/engine/entity.ts",
+        "src/engine/events.ts",
+        "src/engine/input.ts",
+        "src/engine/audio.ts",
+        "src/engine/resources.ts",
+        "src/engine/index.ts",
+        "src/components.ts",
+        "src/systems.ts",
+        "src/factory.ts",
+        "src/chase-state.ts",
+        "src/main.ts"
+    ],
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "noImplicitAny": true,
+        "target": "es6",
+        "types": ["pixi.js"]
+    }
+}
