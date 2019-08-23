@@ -1,18 +1,18 @@
-import { Game } from './game';
+import { Engine } from './engine';
 import { System } from './entity';
 import { ResourceLoader } from './resources';
 
 
 export abstract class GameState {
 
-    protected game: Game;
+    protected engine: Engine;
     protected resourceLoader: ResourceLoader;
     private useResourceLoader: boolean;
     private imageResourcesUrls: string[];
     private soundResourcesUrls: string[];
 
-    constructor(game: Game, useResourceLoader: boolean) {
-        this.game = game;
+    constructor(engine: Engine, useResourceLoader: boolean) {
+        this.engine = engine;
         this.useResourceLoader = useResourceLoader;
     }
 
@@ -32,7 +32,7 @@ export abstract class GameState {
         }
 
         if (this.useResourceLoader) {
-            this.resourceLoader = new ResourceLoader(this.imageResourcesUrls, this.soundResourcesUrls, this.game.pixiApp);
+            this.resourceLoader = new ResourceLoader(this.imageResourcesUrls, this.soundResourcesUrls, this.engine.pixiApp);
             this.resourceLoader.downloadResources(next);
         } else {
             next();

@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { Entity,Component, Game } from './engine';
+import { Entity,Component, Engine } from '../../src';
 import { CollisionComponent,DestroyDeadEntityComponent,FollowComponent,HealthComponent,InputComponent,PositionComponent,SpriteComponent } from './components';
 
 
@@ -8,18 +8,18 @@ export class EntityFactory {
     private debug = false;
 
     constructor(
-        readonly game: Game
+        readonly engine: Engine
     ) {}
 
     createPlayer(unavailableCells: number[]): Entity {
-        let player = this.game.entityManager.createNewEntity();
-        let deltaX = this.game.pixiApp.renderer.width / this.game.properties.boardWidth;
-        let deltaY = this.game.pixiApp.renderer.height / this.game.properties.boardHeight;
-        let numCells = this.game.properties.boardWidth * this.game.properties.boardHeight;
+        let player = this.engine.entityManager.createNewEntity();
+        let deltaX = this.engine.pixiApp.renderer.width / this.engine.properties.boardWidth;
+        let deltaY = this.engine.pixiApp.renderer.height / this.engine.properties.boardHeight;
+        let numCells = this.engine.properties.boardWidth * this.engine.properties.boardHeight;
         
-        let cellX = Math.floor( this.game.properties.boardWidth / 2 );
-        let cellY = Math.floor( this.game.properties.boardHeight / 2 - 1 );
-        let playerCell = cellY * this.game.properties.boardHeight + cellX;
+        let cellX = Math.floor( this.engine.properties.boardWidth / 2 );
+        let cellY = Math.floor( this.engine.properties.boardHeight / 2 - 1 );
+        let playerCell = cellY * this.engine.properties.boardHeight + cellX;
         unavailableCells.push( playerCell );
         let x = cellX * deltaX;
         let y = cellY * deltaY;
@@ -39,19 +39,19 @@ export class EntityFactory {
             new CollisionComponent(),
             new InputComponent(false, false, false, false, false, false)
         ];
-        components.forEach( (component: Component) => this.game.entityManager.addComponent(component, player));
-        (<SpriteComponent>components[0]).sprites.forEach( s => this.game.pixiApp.stage.addChild(s) );
+        components.forEach( (component: Component) => this.engine.entityManager.addComponent(component, player));
+        (<SpriteComponent>components[0]).sprites.forEach( s => this.engine.pixiApp.stage.addChild(s) );
         return player;
     }
 
     createEnemies(player: Entity, unavailableCells: number[]): Entity[] {
         let enemies: Entity[] = [];
-        let deltaX = this.game.pixiApp.renderer.width / this.game.properties.boardWidth;
-        let deltaY = this.game.pixiApp.renderer.height / this.game.properties.boardHeight;
-        let numCells = this.game.properties.boardWidth * this.game.properties.boardHeight;
+        let deltaX = this.engine.pixiApp.renderer.width / this.engine.properties.boardWidth;
+        let deltaY = this.engine.pixiApp.renderer.height / this.engine.properties.boardHeight;
+        let numCells = this.engine.properties.boardWidth * this.engine.properties.boardHeight;
         
-        for (let i=0; i<this.game.properties.enemies; i++) {
-            let enemy = this.game.entityManager.createNewEntity();
+        for (let i=0; i<this.engine.properties.enemies; i++) {
+            let enemy = this.engine.entityManager.createNewEntity();
 
             let enemyCell = Math.floor( Math.random() * numCells );
             while ( unavailableCells.indexOf(enemyCell) != -1 ) {
@@ -59,8 +59,8 @@ export class EntityFactory {
             }
             unavailableCells.push( enemyCell );
 
-            let cellX = enemyCell % this.game.properties.boardWidth;
-            let cellY = Math.floor( enemyCell / this.game.properties.boardWidth );
+            let cellX = enemyCell % this.engine.properties.boardWidth;
+            let cellY = Math.floor( enemyCell / this.engine.properties.boardWidth );
             let x = cellX * deltaX;
             let y = cellY * deltaY;
             let pSprite = new PIXI.Sprite( PIXI.Loader.shared.resources['img/zombie.png'].texture );
@@ -79,8 +79,8 @@ export class EntityFactory {
                 new CollisionComponent(),
                 new FollowComponent(player),
             ];
-            components.forEach( (component: Component) => this.game.entityManager.addComponent(component, enemy));
-            (<SpriteComponent>components[0]).sprites.forEach( s => this.game.pixiApp.stage.addChild(s) );
+            components.forEach( (component: Component) => this.engine.entityManager.addComponent(component, enemy));
+            (<SpriteComponent>components[0]).sprites.forEach( s => this.engine.pixiApp.stage.addChild(s) );
             enemies.push(enemy);
         }
         return enemies;
@@ -88,12 +88,12 @@ export class EntityFactory {
 
     createBlocks(unavailableCells: number[]): Entity[] {
         let blocks: Entity[] = [];
-        let deltaX = this.game.pixiApp.renderer.width / this.game.properties.boardWidth;
-        let deltaY = this.game.pixiApp.renderer.height / this.game.properties.boardHeight;
-        let numCells = this.game.properties.boardWidth * this.game.properties.boardHeight;
+        let deltaX = this.engine.pixiApp.renderer.width / this.engine.properties.boardWidth;
+        let deltaY = this.engine.pixiApp.renderer.height / this.engine.properties.boardHeight;
+        let numCells = this.engine.properties.boardWidth * this.engine.properties.boardHeight;
         
-        for (let i=0; i<this.game.properties.blocks; i++) {
-            let block = this.game.entityManager.createNewEntity();
+        for (let i=0; i<this.engine.properties.blocks; i++) {
+            let block = this.engine.entityManager.createNewEntity();
 
             let blockCell = Math.floor( Math.random() * numCells );
             while ( unavailableCells.indexOf(blockCell) != -1 ) {
@@ -101,8 +101,8 @@ export class EntityFactory {
             }
             unavailableCells.push( blockCell );
 
-            let cellX = blockCell % this.game.properties.boardWidth;
-            let cellY = Math.floor( blockCell / this.game.properties.boardWidth );
+            let cellX = blockCell % this.engine.properties.boardWidth;
+            let cellY = Math.floor( blockCell / this.engine.properties.boardWidth );
             let x = cellX * deltaX;
             let y = cellY * deltaY;
             let pSprite = new PIXI.Sprite( PIXI.Loader.shared.resources['img/block.png'].texture );
@@ -118,8 +118,8 @@ export class EntityFactory {
                 new PositionComponent(cellX, cellY, x, y),
                 new CollisionComponent(),
             ];
-            components.forEach( (component: Component) => this.game.entityManager.addComponent(component, block));
-            (<SpriteComponent>components[0]).sprites.forEach( s => this.game.pixiApp.stage.addChild(s) );
+            components.forEach( (component: Component) => this.engine.entityManager.addComponent(component, block));
+            (<SpriteComponent>components[0]).sprites.forEach( s => this.engine.pixiApp.stage.addChild(s) );
             blocks.push(block);
         }
         return blocks;
@@ -127,14 +127,14 @@ export class EntityFactory {
 
     createBoardCells(): Entity[] {
         let cells: Entity[] = [];
-        let numCells = this.game.properties.boardWidth * this.game.properties.boardHeight;
-        let deltaX = this.game.pixiApp.renderer.width / this.game.properties.boardWidth;
-        let deltaY = this.game.pixiApp.renderer.height / this.game.properties.boardHeight;
+        let numCells = this.engine.properties.boardWidth * this.engine.properties.boardHeight;
+        let deltaX = this.engine.pixiApp.renderer.width / this.engine.properties.boardWidth;
+        let deltaY = this.engine.pixiApp.renderer.height / this.engine.properties.boardHeight;
         
         for (let i=0; i<numCells; i++) {
-            let cell = this.game.entityManager.createNewEntity();
-            let cellX = i % this.game.properties.boardWidth;
-            let cellY = Math.floor( i / this.game.properties.boardWidth );
+            let cell = this.engine.entityManager.createNewEntity();
+            let cellX = i % this.engine.properties.boardWidth;
+            let cellY = Math.floor( i / this.engine.properties.boardWidth );
             let x = cellX * deltaX;
             let y = cellY * deltaY;
             let pSprite = new PIXI.Sprite( PIXI.Loader.shared.resources['img/square.png'].texture );
@@ -150,27 +150,27 @@ export class EntityFactory {
                 new SpriteComponent([pSprite], 0, true),
                 new PositionComponent(cellX, cellY, x, y),
             ];
-            components.forEach( (component: Component) => this.game.entityManager.addComponent(component, cell));
-            (<SpriteComponent>components[0]).sprites.forEach( s => this.game.pixiApp.stage.addChild(s) );
+            components.forEach( (component: Component) => this.engine.entityManager.addComponent(component, cell));
+            (<SpriteComponent>components[0]).sprites.forEach( s => this.engine.pixiApp.stage.addChild(s) );
             cells.push( cell );
         }
         return cells;
     }
 
     createSplat(boardX: number, boardY: number, abovePlayer: boolean = false) {
-        let splat = this.game.entityManager.createNewEntity();
-        let deltaX = this.game.pixiApp.renderer.width / this.game.properties.boardWidth;
-        let deltaY = this.game.pixiApp.renderer.height / this.game.properties.boardHeight;
+        let splat = this.engine.entityManager.createNewEntity();
+        let deltaX = this.engine.pixiApp.renderer.width / this.engine.properties.boardWidth;
+        let deltaY = this.engine.pixiApp.renderer.height / this.engine.properties.boardHeight;
         let pSprite = new PIXI.Sprite( PIXI.Loader.shared.resources['img/splat.png'].texture );
         pSprite.width = deltaX;
         pSprite.height = deltaY;
         pSprite.zIndex = abovePlayer ? 5 : 1;
-        this.game.pixiApp.stage.addChild(pSprite);
+        this.engine.pixiApp.stage.addChild(pSprite);
         let components: Component[] = [
             new SpriteComponent([pSprite], 0, true),
             new PositionComponent(boardX, boardY, 0, 0)
         ];
-        components.forEach( (component: Component) => this.game.entityManager.addComponent(component, splat));
+        components.forEach( (component: Component) => this.engine.entityManager.addComponent(component, splat));
         return splat;
     }
 }

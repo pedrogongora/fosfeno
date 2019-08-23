@@ -1,4 +1,4 @@
-import { Game } from './game';
+import { Engine } from './engine';
 import { GameProperties } from './gameprops';
 import { EventQueue, GameEvent } from './events';
 
@@ -31,10 +31,10 @@ export interface RenderableSystem extends System {
 
 
 export abstract class System {
-    protected game: Game;
+    protected engine: Engine;
 
-    constructor(game: Game) {
-        this.game = game;
+    constructor(engine: Engine) {
+        this.engine = engine;
     }
 
     abstract update(delta: number): void;
@@ -44,35 +44,35 @@ export abstract class System {
     abstract destroy(): void;
 
     protected getEntityComponentOfClass<C>(className: ComponentClassName<C>, forEntity: Entity): Component {
-        return this.game.entityManager.getEntityComponentOfClass(className, forEntity);
+        return this.engine.entityManager.getEntityComponentOfClass(className, forEntity);
     }
 
     protected getEntityComponents(forEntity: Entity): Component[] {
-        return this.game.entityManager.getEntityComponents(forEntity);
+        return this.engine.entityManager.getEntityComponents(forEntity);
     }
 
     protected getComponentsOfClass<C>(className: ComponentClassName<C>): Component[] {
-        return this.game.entityManager.getComponentsOfClass(className);
+        return this.engine.entityManager.getComponentsOfClass(className);
     }
 
     protected getEntitiesWithComponentOfClass<C>(className: ComponentClassName<C>): Entity[] {
-        return this.game.entityManager.getEntitiesWithComponentOfClass(className);
+        return this.engine.entityManager.getEntitiesWithComponentOfClass(className);
     }
 
     protected subscribeToEvents(subscriptions: [string,((event: GameEvent) => void)][]) {
-        subscriptions.forEach(([eventType, callback]) => { this.game.eventQueue.subscribe(eventType, callback) });
+        subscriptions.forEach(([eventType, callback]) => { this.engine.eventQueue.subscribe(eventType, callback) });
     }
 
     protected subscribeToEventForImmediateAttendance(subscriptions: [string,((event: GameEvent) => void)][]) {
-        subscriptions.forEach(([eventType, callback]) => { this.game.eventQueue.subscribeForImmediateAttendance(eventType, callback) });
+        subscriptions.forEach(([eventType, callback]) => { this.engine.eventQueue.subscribeForImmediateAttendance(eventType, callback) });
     }
 
     protected publishEvent(event: GameEvent) {
-        this.game.eventQueue.publish(event);
+        this.engine.eventQueue.publish(event);
     }
 
     protected getEntitiesBySignature(requiredComponents: ComponentClassName<Component>[], optionalComponents?: ComponentClassName<Component>[]) {
-        return new EntitySignature(this.game.entityManager, requiredComponents, optionalComponents, this);
+        return new EntitySignature(this.engine.entityManager, requiredComponents, optionalComponents, this);
     }
 }
 

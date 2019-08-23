@@ -8,11 +8,12 @@
         "src/engine/audio.ts",
         "src/engine/resources.ts",
         "src/engine/index.ts",
-        "src/components.ts",
-        "src/systems.ts",
-        "src/factory.ts",
-        "src/chase-state.ts",
-        "src/main.ts"
+        "src/index.ts",
+        "demo/src/components.ts",
+        "demo/src/systems.ts",
+        "demo/src/factory.ts",
+        "demo/src/chase-state.ts",
+        "demo/src/main.ts"
     ],
     "compilerOptions": {
         "moduleResolution": "node",

@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { Entity,Game,GameState,System } from './engine';
+import { Entity,Engine,GameState,System } from '../../src';
 import { CollisionSystem,HealthSystem,MotionSystem,ChaseRenderSystem,EntityDeleteSystem,InputSystem,SoundSystem } from './systems';
 import { EntityFactory } from './factory';
 
@@ -14,8 +14,8 @@ export class ChaseDefaultState extends GameState {
     readonly imageResources: string[];
     readonly soundResources: string[];
 
-    constructor(game: Game) {
-        super(game, true);
+    constructor(engine: Engine) {
+        super(engine, true);
         this.imageResources = [
             'img/cat.png',
             'img/zombie.png',
@@ -32,7 +32,7 @@ export class ChaseDefaultState extends GameState {
     }
 
     private createMainEntities() {
-        let factory = new EntityFactory(this.game);
+        let factory = new EntityFactory(this.engine);
         this.cells = factory.createBoardCells();
         let unavailableCells: number[] = [];
         this.player = factory.createPlayer(unavailableCells);
@@ -42,13 +42,13 @@ export class ChaseDefaultState extends GameState {
 
     private createSystems() {
         this.systems = [
-            new InputSystem(this.game),
-            new MotionSystem( this.game, this.player ),
-            new CollisionSystem( this.game ),
-            new HealthSystem( this.game, this.player ),
-            new ChaseRenderSystem( this.game, this.player ),
-            new SoundSystem( this.game, this.resourceLoader.audio, this.player ),
-            new EntityDeleteSystem( this.game ),
+            new InputSystem(this.engine),
+            new MotionSystem( this.engine, this.player ),
+            new CollisionSystem( this.engine ),
+            new HealthSystem( this.engine, this.player ),
+            new ChaseRenderSystem( this.engine, this.player ),
+            new SoundSystem( this.engine, this.resourceLoader.audio, this.player ),
+            new EntityDeleteSystem( this.engine ),
         ];
     }
 

@@ -1,5 +1,5 @@
 # fosfeno
-An ECS game engine for use with Pixi JS. It cames with a full example from which you can build up.
+An ECS game library for use with Pixi JS. It cames with a small demo from which you can build up.
 
 To install:
 

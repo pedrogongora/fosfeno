@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { Entity,System,RenderableSystem,Game,GameEvent,KeyboardManager,AudioManager } from './engine';
+import { Entity,System,RenderableSystem,Engine,GameEvent,KeyboardManager,AudioManager } from '../../src';
 import { FollowComponent, HealthComponent, PositionComponent, SpriteComponent, InputComponent, DestroyDeadEntityComponent, CollisionComponent } from './components';
 import { ChaseDefaultState } from './chase-state';
 import { EntityFactory } from './factory';
@@ -9,31 +9,31 @@ export class ChaseRenderSystem extends System implements RenderableSystem {
 
     private player: Entity;
 
-    constructor(game: Game, player: Entity) {
-        super(game);
+    constructor(engine: Engine, player: Entity) {
+        super(engine);
         this.player = player;
         this.subscribeToEventForImmediateAttendance([['DeleteEntity', this.onDeleteEntity.bind(this)]]);
         this.subscribeToEvents([['Collision', this.onCollision.bind(this)]]);
 
         document.addEventListener('fullscreenchange', (event) => {
-            this.game.pixiApp.renderer.resize(window.innerWidth, window.innerHeight);
+            this.engine.pixiApp.renderer.resize(window.innerWidth, window.innerHeight);
         });
     }
 
     render(): void {
         let renderEntities = this.getEntitiesBySignature( [SpriteComponent, PositionComponent] );
         renderEntities.forEach((entity: Entity, sprite: SpriteComponent, position: PositionComponent) => {
-            let screenWidth= this.game.pixiApp.renderer.width;
-            let screenHeight = this.game.pixiApp.renderer.height;
+            let screenWidth= this.engine.pixiApp.renderer.width;
+            let screenHeight = this.engine.pixiApp.renderer.height;
             let isPortrait = screenWidth < screenHeight;
-            let cellSide = isPortrait ? Math.floor(screenHeight / this.game.properties.boardHeight) : Math.floor(screenWidth / this.game.properties.boardWidth);
-            if (isPortrait && cellSide * this.game.properties.boardWidth > screenWidth) {
-                cellSide = Math.floor(screenWidth / this.game.properties.boardWidth);
-            } else if (cellSide * this.game.properties.boardHeight > screenHeight) {
-                cellSide = Math.floor(screenHeight / this.game.properties.boardHeight);
+            let cellSide = isPortrait ? Math.floor(screenHeight / this.engine.properties.boardHeight) : Math.floor(screenWidth / this.engine.properties.boardWidth);
+            if (isPortrait && cellSide * this.engine.properties.boardWidth > screenWidth) {
+                cellSide = Math.floor(screenWidth / this.engine.properties.boardWidth);
+            } else if (cellSide * this.engine.properties.boardHeight > screenHeight) {
+                cellSide = Math.floor(screenHeight / this.engine.properties.boardHeight);
             }
-            let offsetX = Math.floor( (screenWidth - cellSide * this.game.properties.boardWidth) / 2 );
-            let offsetY = Math.floor( (screenHeight - cellSide * this.game.properties.boardHeight) / 2 );
+            let offsetX = Math.floor( (screenWidth - cellSide * this.engine.properties.boardWidth) / 2 );
+            let offsetY = Math.floor( (screenHeight - cellSide * this.engine.properties.boardHeight) / 2 );
 
             if ( position ) {
                 position.canvasX = position.boardX * cellSide + offsetX;
@@ -50,7 +50,7 @@ export class ChaseRenderSystem extends System implements RenderableSystem {
     onCollision(event: GameEvent) {
         const playerPosition: PositionComponent = <PositionComponent> this.getEntityComponentOfClass(PositionComponent, this.player);
         const isPlayer = event.msg.x === playerPosition.boardX && event.msg.y === playerPosition.boardY;
-        let factory = new EntityFactory(this.game);
+        let factory = new EntityFactory(this.engine);
         factory.createSplat(event.msg.x, event.msg.y, isPlayer);
     }
 
@@ -84,8 +84,8 @@ export class ChaseRenderSystem extends System implements RenderableSystem {
 
 export class MotionSystem extends System {
 
-    constructor(game: Game, player: Entity) {
-        super(game);
+    constructor(engine: Engine, player: Entity) {
+        super(engine);
     }
 
     update(delta: number) {
@@ -103,7 +103,7 @@ export class MotionSystem extends System {
                 if ( input.down ) {
                     updated.add(entity.id);
                     input.down = false;
-                    if (position.boardY < this.game.properties.boardHeight - 1) {
+                    if (position.boardY < this.engine.properties.boardHeight - 1) {
                         position.boardY++;
                     }
                 }
@@ -117,15 +117,15 @@ export class MotionSystem extends System {
                 if ( input.right ) {
                     updated.add(entity.id);
                     input.right = false;
-                    if (position.boardX < this.game.properties.boardWidth - 1) {
+                    if (position.boardX < this.engine.properties.boardWidth - 1) {
                         position.boardX++;
                     }
                 }
                 if ( input.teleport ) {
                     updated.add(entity.id);
                     input.teleport = false;
-                    position.boardX = Math.floor( Math.random() * (this.game.properties.boardWidth - 1) );
-                    position.boardY = Math.floor( Math.random() * (this.game.properties.boardHeight - 1) );
+                    position.boardX = Math.floor( Math.random() * (this.engine.properties.boardWidth - 1) );
+                    position.boardY = Math.floor( Math.random() * (this.engine.properties.boardHeight - 1) );
                     this.publishEvent({ type: 'Teleport', msg: entity });
                 }
             }
@@ -161,12 +161,12 @@ export class InputSystem extends System {
 
     private keyboardManager: KeyboardManager;
 
-    constructor(game: Game) {
-        super(game);
+    constructor(engine: Engine) {
+        super(engine);
 
         this.keyboardManager = new KeyboardManager();
 
-        let inputComponents = () => { return this.game.entityManager.getComponentsOfClass(InputComponent) };
+        let inputComponents = () => { return this.engine.entityManager.getComponentsOfClass(InputComponent) };
 
         const uppress = () => { inputComponents().forEach((component: InputComponent) => component.up = true) };
         const uprelease = () => { inputComponents().forEach((component: InputComponent) => component.up = false) };
@@ -184,14 +184,14 @@ export class InputSystem extends System {
         const trelease = () => { inputComponents().forEach((component: InputComponent) => component.teleport = false) };
 
         const rpress = () => {};
-        const rrelease = () => { game.setState( new ChaseDefaultState(game) ) };
+        const rrelease = () => { engine.setState( new ChaseDefaultState(engine) ) };
 
         const fpress = () => { };
         const frelease = () => {
             if (document.fullscreenElement) {
                 document.exitFullscreen();
             } else {
-                this.game.pixiApp.view.requestFullscreen();
+                this.engine.pixiApp.view.requestFullscreen();
             }
         };
 
@@ -223,8 +223,8 @@ export class HealthSystem extends System {
 
     private player: Entity;
 
-    constructor(game: Game, player: Entity) {
-        super(game);
+    constructor(engine: Engine, player: Entity) {
+        super(engine);
         this.player = player;
         this.subscribeToEvents([['Collision', this.onCollision.bind(this)]]);
     }
@@ -260,8 +260,8 @@ export class HealthSystem extends System {
 
 export class CollisionSystem extends System {
 
-    constructor(game: Game) {
-        super(game);
+    constructor(engine: Engine) {
+        super(engine);
     }
 
     update(delta: number) {
@@ -299,8 +299,8 @@ export class SoundSystem extends System {
     private audio: AudioManager;
     private player: Entity;
 
-    constructor(game: Game, audio: AudioManager, player: Entity) {
-        super(game);
+    constructor(engine: Engine, audio: AudioManager, player: Entity) {
+        super(engine);
         this.audio = audio;
         this.player = player;
         this.subscribeToEvents([
@@ -332,8 +332,8 @@ export class SoundSystem extends System {
 
 export class EntityDeleteSystem extends System {
 
-    constructor(game: Game) {
-        super(game);
+    constructor(engine: Engine) {
+        super(engine);
     }
 
     update(delta: number) {
@@ -341,7 +341,7 @@ export class EntityDeleteSystem extends System {
         entities.forEach((entity: Entity, destroy: DestroyDeadEntityComponent, health: HealthComponent) => {
             if (destroy.destroyWhenDead && !health.alive) {
                 this.publishEvent({ type: 'DeleteEntity', msg: entity});
-                this.game.entityManager.removeEntity(entity);
+                this.engine.entityManager.removeEntity(entity);
             }
         });
     }

@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { Component, Entity } from './engine';
+import { Component, Entity } from '../../src';
 
 
 export class SpriteComponent implements Component {
