@@ -2,6 +2,10 @@
   "name": "fosfeno",
   "version": "0.0.2",
   "description": "An ECS game engine for use with Pixi JS",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pedrogongora/fosfeno.git"
+  },
   "main": "src/index.ts",
   "scripts": {
     "build-demo": "gulp"
