@@ -1,24 +1,15 @@
 {
-    "files": [
-        "src/engine/game.ts",
-        "src/engine/state.ts",
-        "src/engine/entity.ts",
-        "src/engine/events.ts",
-        "src/engine/input.ts",
-        "src/engine/audio.ts",
-        "src/engine/resources.ts",
-        "src/engine/index.ts",
-        "src/index.ts",
-        "demo/src/components.ts",
-        "demo/src/systems.ts",
-        "demo/src/factory.ts",
-        "demo/src/chase-state.ts",
-        "demo/src/main.ts"
-    ],
     "compilerOptions": {
         "moduleResolution": "node",
         "noImplicitAny": true,
         "target": "es6",
-        "types": ["pixi.js"]
+        "types": [
+            "pixi.js"
+        ],
+        "lib": [
+            "dom",
+            "es2015",
+            "es5"
+        ]
     }
 }
