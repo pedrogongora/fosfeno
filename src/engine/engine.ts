@@ -11,18 +11,19 @@ export class Engine {
     readonly eventQueue: EventQueue;
     readonly properties: GameProperties;
     readonly pixiApp: PIXI.Application;
+    readonly pixiDefaultProperties = {
+        resizeTo: window,
+        antialias: false,
+        transparent: false,
+        resolution: window.devicePixelRatio
+    };
     private currentState: GameState;
 
     constructor(properties: GameProperties) {
         this.eventQueue = new EventQueue();
         this.properties = properties,
         this.entityManager = new EntityManager(properties, this.eventQueue),
-        this.pixiApp = new PIXI.Application({
-            resizeTo: window,
-            antialias: false,
-            transparent: false,
-            resolution: window.devicePixelRatio
-        })
+        this.pixiApp = new PIXI.Application({...this.pixiDefaultProperties, ...properties.pixiProperties});
         this.pixiApp.stage.sortableChildren = true;
     }
 
