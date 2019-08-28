@@ -8,7 +8,7 @@ export class AudioManager {
         this.sounds = {};
     }
     
-    async loadSounds(filenames: string[], progressCallback: (()=>void)) {
+    loadSounds(filenames: string[], progressCallback: (()=>void)) {
         let loaders:any = [];
         
         for ( let i=0; i<filenames.length; i++ ) {

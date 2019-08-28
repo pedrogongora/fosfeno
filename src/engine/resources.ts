@@ -40,7 +40,7 @@ export class ResourceLoader {
         });
     }
 
-    private async downloadSounds(progressCallback: (()=>void)) {
+    private downloadSounds(progressCallback: (()=>void)) {
         let filenames = this.soundFilenames;
         return this.audio.loadSounds(filenames, progressCallback.bind(this));
     }
