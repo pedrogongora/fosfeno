@@ -311,7 +311,7 @@ export class SoundSystem extends System {
     }
 
     onPlayerDied(event: GameEvent) {
-        this.audio.sounds['splat'].once('end', ()=>{ this.audio.sounds['meow'].play() }).play();
+        this.audio.sounds.get('splat').once('end', ()=>{ this.audio.sounds.get('meow').play() }).play();
     }
 
     onEnemyDied(event: GameEvent) {

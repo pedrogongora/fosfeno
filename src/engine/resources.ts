@@ -10,8 +10,6 @@ export class ResourceLoader {
     private numDownloadedResources = 0;
     
     private background: PIXI.Graphics;
-    private progressBackground: PIXI.Graphics;
-    private progressContent: PIXI.Graphics;
 
     readonly pixiApp: PIXI.Application;
 
@@ -25,30 +23,38 @@ export class ResourceLoader {
         this.numResources = imageFilenames.length + soundFilenames.length;
     }
 
-    private downloadSprites(progressCallback: (()=>void)) {
+    private downloadSprites(progressCallback: (()=>void), callback: (()=>void)) {
         let loader = PIXI.Loader.shared;
-        return new Promise((resolve, reject) => {
-            loader.add(this.imageFilenames)
-            .on('load', (loader, resource) => {
-                progressCallback();
-                console.log(`loading: ${resource.url}`);
-            })
-            .on('error', (err) => {
-                reject( new Error('On loading sprite: ' + err ) );
-            })
-            .load( () => resolve() );
-        });
+        loader.add(this.imageFilenames)
+        .on('load', (loader, resource) => {
+            progressCallback();
+            console.log(`loading: ${resource.url}`);
+        })
+        .on('error', (err) => {
+            throw new Error('On loading sprite: ' + err );
+        })
+        .load(() => { callback() });
     }
 
-    private downloadSounds(progressCallback: (()=>void)) {
+    private downloadSounds(progressCallback: (()=>void), callback: (()=>void)) {
         let filenames = this.soundFilenames;
-        return this.audio.loadSounds(filenames, progressCallback.bind(this));
+        this.audio.loadSounds(filenames, progressCallback, callback);
     }
 
-    async downloadResources(callback: (()=>void)) {
+    downloadResources(callback: (()=>void)) {
+        this.initLoadScreen();
+        const next = () => {
+            this.downloadSounds(this.progressCallback.bind(this), (() => {
+                this.destroyLoadScreen(); 
+                callback();
+            }).bind(this));
+        };
+        this.downloadSprites.bind(this)(()=>{this.progressCallback()}, next.bind(this));
+    }
+
+    private initLoadScreen() {
         const width = this.pixiApp.renderer.width;
         const height = this.pixiApp.renderer.height;
-        const radius = 1;
         
         this.background = new PIXI.Graphics();
         this.background.beginFill(0x000000);
@@ -57,39 +63,26 @@ export class ResourceLoader {
         this.background.x = 0;
         this.background.y = 0;
 
-        this.progressBackground = new PIXI.Graphics();
-        this.progressBackground.beginFill(0x000000);
-        this.progressBackground.lineStyle(1, 0x66BB66);
-        this.progressBackground.drawRoundedRect(0,0,102,22,radius);
-        this.progressBackground.endFill();
-
-        this.progressContent = new PIXI.Graphics();
-        this.progressContent.beginFill(0x00FF00);
-        this.progressContent.drawRoundedRect(0,0,0,20,radius);
-        this.progressContent.endFill();
-        this.progressContent.position.set(1,1);
-
-        this.progressBackground.x = width / 2 - 51;
-        this.progressBackground.y = height / 2 - 11;
-        
-        this.progressBackground.addChild(this.progressContent);
+        this.background.beginFill(0x000000);
+        this.background.lineStyle(1, 0x00FF00);
+        this.background.drawRect(width/2 - 50, height/2 - 10, 100, 20);
+        this.background.endFill();
 
         this.pixiApp.stage.addChild(this.background);
-        this.pixiApp.stage.addChild(this.progressBackground);
+    }
 
-        const progressCallback = () => {
-            this.numDownloadedResources += 1;
-            let width = Math.floor(this.numDownloadedResources * 100 / this.numResources);
-            this.progressContent.beginFill(0x00FF00);
-            this.progressContent.drawRoundedRect(0,0,width,20,radius);
-            this.progressContent.endFill();
-        };
+    private destroyLoadScreen() {
+        this.background.destroy();
+        this.pixiApp.stage.removeChildren();
+    }
 
-        this.downloadSprites.bind(this)(progressCallback)
-        .then(this.downloadSounds.bind(this)(progressCallback))
-        .then(() => {
-            this.pixiApp.stage.removeChildren();
-            callback();
-        });
+    private progressCallback() {
+        const width = this.pixiApp.renderer.width;
+        const height = this.pixiApp.renderer.height;
+        this.numDownloadedResources += 1;
+        let progressWidth = Math.floor(this.numDownloadedResources * 100 / this.numResources);
+        this.background.beginFill(0x00FF00);
+        this.background.drawRect(width/2 - 50, height/2 - 10, progressWidth, 20);
+        this.background.endFill();
     }
 }

@@ -25,8 +25,8 @@ export abstract class GameState {
     
     abstract init(): void;
 
-    async start(callback: () => void) {
-        const next = async () => {
+    start(callback: () => void) {
+        const next = () => {
             this.init();
             callback();
         }
