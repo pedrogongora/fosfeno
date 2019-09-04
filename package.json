@@ -1,6 +1,6 @@
 {
   "name": "fosfeno",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "An ECS game engine for use with Pixi JS",
   "repository": {
     "type": "git",
