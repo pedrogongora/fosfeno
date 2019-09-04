@@ -1,9 +1,11 @@
-import { Engine } from './engine';
+
 import { GameProperties } from './gameprops';
-import { EventQueue, GameEvent } from './events';
+import { EventQueue } from './events';
+import { Component, ComponentClassName } from './component';
 
 
 export class Entity {
+
     readonly id: number;
 
     constructor(id: number) {
@@ -13,71 +15,11 @@ export class Entity {
     toString(): string {
         return 'entity#' + this.id;
     }
+
 }
 
 
-export interface Component {
-}
-
-
-export interface ComponentClassName<T extends Component> {
-    name: string;
-}
-
-
-export interface RenderableSystem extends System {
-    render(): void;
-}
-
-
-export abstract class System {
-    protected engine: Engine;
-
-    constructor(engine: Engine) {
-        this.engine = engine;
-    }
-
-    abstract update(delta: number): void;
-
-    abstract cleanup(): void;
-
-    abstract destroy(): void;
-
-    protected getEntityComponentOfClass<C>(className: ComponentClassName<C>, forEntity: Entity): Component {
-        return this.engine.entityManager.getEntityComponentOfClass(className, forEntity);
-    }
-
-    protected getEntityComponents(forEntity: Entity): Component[] {
-        return this.engine.entityManager.getEntityComponents(forEntity);
-    }
-
-    protected getComponentsOfClass<C>(className: ComponentClassName<C>): Component[] {
-        return this.engine.entityManager.getComponentsOfClass(className);
-    }
-
-    protected getEntitiesWithComponentOfClass<C>(className: ComponentClassName<C>): Entity[] {
-        return this.engine.entityManager.getEntitiesWithComponentOfClass(className);
-    }
-
-    protected subscribeToEvents(subscriptions: [string,((event: GameEvent) => void)][]) {
-        subscriptions.forEach(([eventType, callback]) => { this.engine.eventQueue.subscribe(eventType, callback) });
-    }
-
-    protected subscribeToEventForImmediateAttendance(subscriptions: [string,((event: GameEvent) => void)][]) {
-        subscriptions.forEach(([eventType, callback]) => { this.engine.eventQueue.subscribeForImmediateAttendance(eventType, callback) });
-    }
-
-    protected publishEvent(event: GameEvent) {
-        this.engine.eventQueue.publish(event);
-    }
-
-    protected getEntitiesBySignature(requiredComponents: ComponentClassName<Component>[], optionalComponents?: ComponentClassName<Component>[]) {
-        return new EntitySignature(this.engine.entityManager, requiredComponents, optionalComponents, this);
-    }
-}
-
-
-class EntitySignature {
+export class EntitySignature {
     
     private entityManager: EntityManager;
     private callbackContext: any;
@@ -109,6 +51,7 @@ class EntitySignature {
 
 
 export class EntityManager {
+
     private entities: number[];
     private componentsByClass: Map<string, Component[]>;
     private lowestUnassignedId: number;
@@ -207,4 +150,5 @@ export class EntityManager {
 
         return entities;
     }
+
 }

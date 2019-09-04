@@ -33,6 +33,17 @@ export class EventQueue {
         }
     }
 
+    unsubscribe(eventType: string, callback: (event: GameEvent) => void) {
+        let eventCallbacks = this.subscriptions.get( eventType );
+        let eventImmediateCallbacks = this.immediateSubscriptions.get( eventType );
+
+        if ( eventCallbacks ) eventCallbacks = eventCallbacks.filter( cb => { cb !== callback } );
+        if ( eventImmediateCallbacks ) eventImmediateCallbacks = eventImmediateCallbacks.filter( cb => { cb !== callback } );
+        
+        if ( eventCallbacks ) this.subscriptions.set( eventType, eventCallbacks );
+        if ( eventImmediateCallbacks ) this.immediateSubscriptions.set( eventType, eventImmediateCallbacks );
+    }
+
     publish(event: GameEvent) {
         this.queue.push(event);
         if (this.immediateSubscriptions.has(event.type)) {

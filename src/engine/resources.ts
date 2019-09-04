@@ -28,7 +28,7 @@ export class ResourceLoader {
         loader.add(this.imageFilenames)
         .on('load', (loader, resource) => {
             progressCallback();
-            console.log(`loading: ${resource.url}`);
+            //console.log(`loading: ${resource.url}`);
         })
         .on('error', (err) => {
             throw new Error('On loading sprite: ' + err );

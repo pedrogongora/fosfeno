@@ -22,7 +22,7 @@ export class AudioManager {
                 const howlOpts = {
                     src: s,
                     preload: true,
-                    onload: () => { console.log(`loading: ${s}`); progressCallback(); this.fileLoaded(); },
+                    onload: () => { /* console.log(`loading: ${s}`); */ progressCallback(); this.fileLoaded(); },
                     onloaderror: (id: number, err: string) => { throw new Error(`Failed loading ${s}: ${err}`) }
                 };
                 this.sounds.set(name, new Howl(howlOpts));

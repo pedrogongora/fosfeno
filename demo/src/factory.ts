@@ -173,4 +173,23 @@ export class EntityFactory {
         components.forEach( (component: Component) => this.engine.entityManager.addComponent(component, splat));
         return splat;
     }
+
+    createPauseScreen() {
+        const pause = this.engine.entityManager.createNewEntity();
+        const size = this.engine.pixiApp.renderer.width < this.engine.pixiApp.renderer.height
+            ? this.engine.pixiApp.renderer.width
+            : this.engine.pixiApp.renderer.height;
+        const pSprite = new PIXI.Sprite( PIXI.Loader.shared.resources['img/pause.png'].texture );
+        pSprite.width = size;
+        pSprite.height = size;
+        pSprite.zIndex = 100;
+        pSprite.visible = true;
+        this.engine.pixiApp.stage.addChild(pSprite);
+        let components: Component[] = [
+            new SpriteComponent([pSprite], 0, true),
+            new PositionComponent(0, 0, 0, 0)
+        ];
+        components.forEach( (component: Component) => this.engine.entityManager.addComponent(component, pause));
+        return pause;
+    }
 }

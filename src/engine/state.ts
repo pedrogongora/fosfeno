@@ -1,7 +1,6 @@
 import { Engine } from './engine';
-import { System } from './entity';
+import { System } from './system';
 import { ResourceLoader } from './resources';
-
 
 export abstract class GameState {
 
@@ -15,31 +14,45 @@ export abstract class GameState {
         this.engine = engine;
         this.useResourceLoader = useResourceLoader;
     }
+    
+    abstract init(): void;
+    
+    abstract stage(): void;
+    
+    abstract unstage(): void;
+
+    abstract destroy(): void;
+    
+    abstract getSystems(): System[];
 
     setResourceUrls(imageResourcesUrls: string[], soundResourcesUrls: string[]) {
         this.imageResourcesUrls = imageResourcesUrls;
         this.soundResourcesUrls = soundResourcesUrls;
     }
 
-    abstract getSystems(): System[];
-    
-    abstract init(): void;
-
     start(callback: () => void) {
         const next = () => {
-            this.init();
+            this.stage();
+            this.stageSystems();
             callback();
         }
 
         if (this.useResourceLoader) {
+            this.useResourceLoader = false;
             this.resourceLoader = new ResourceLoader(this.imageResourcesUrls, this.soundResourcesUrls, this.engine.pixiApp);
-            this.resourceLoader.downloadResources(next);
+            this.resourceLoader.downloadResources(() => { this.init(); next(); });
         } else {
             next();
         }
     }
 
-    abstract destroy(): void;
+    stageSystems() {
+        this.getSystems().forEach(system => { system.stage() });
+    }
+
+    unstageSystems() {
+        this.getSystems().forEach(system => { system.unstage() });
+    }
 
     destroySystems() {
         this.getSystems().forEach(system => { system.destroy() });

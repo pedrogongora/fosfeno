@@ -1,6 +1,5 @@
-import * as PIXI from 'pixi.js';
 import { Entity,Engine,GameState,System } from '../../src';
-import { CollisionSystem,HealthSystem,MotionSystem,ChaseRenderSystem,EntityDeleteSystem,InputSystem,SoundSystem } from './systems';
+import { CollisionSystem,HealthSystem,MotionSystem,ChaseRenderSystem,EntityDeleteSystem,InputSystem,SoundSystem, PauseInputSystem, PauseRenderSystem } from './systems';
 import { EntityFactory } from './factory';
 
 
@@ -14,14 +13,15 @@ export class ChaseDefaultState extends GameState {
     readonly imageResources: string[];
     readonly soundResources: string[];
 
-    constructor(engine: Engine) {
-        super(engine, true);
+    constructor(engine: Engine, useResourceLoaders: boolean) {
+        super(engine, useResourceLoaders);
         this.imageResources = [
             'img/cat.png',
             'img/zombie.png',
             'img/square.png',
             'img/block.png',
             'img/splat.png',
+            'img/pause.png',
         ];
         this.soundResources = [
             'sound/beep.wav',
@@ -55,12 +55,51 @@ export class ChaseDefaultState extends GameState {
     init() {
         this.createMainEntities();
         this.createSystems();
-        console.log(`player: ${this.player}`)
+        console.log(`player: ${this.player}`);
     }
 
-    destroy() {
-        PIXI.Loader.shared.reset();
+    stage() {}
+
+    unstage() {}
+
+    destroy() {}
+
+    getSystems() {
+        return this.systems;
     }
+}
+
+
+export class ChasePauseState extends GameState {
+
+    private systems: System[];
+    private pauseScreen: Entity;
+
+    constructor(engine: Engine, useResourceLoaders: boolean) {
+        super(engine, useResourceLoaders);
+        this.createMainEntities();
+        this.createSystems();
+    }
+
+    private createMainEntities() {
+        let factory = new EntityFactory(this.engine);
+        this.pauseScreen = factory.createPauseScreen();
+    }
+
+    private createSystems() {
+        this.systems = [
+            new PauseInputSystem(this.engine),
+            new PauseRenderSystem( this.engine, this.pauseScreen ),
+        ];
+    }
+
+    init() {}
+
+    stage() {}
+
+    unstage() {}
+
+    destroy() {}
 
     getSystems() {
         return this.systems;

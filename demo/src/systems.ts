@@ -1,7 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { Entity,System,RenderableSystem,Engine,GameEvent,KeyboardManager,AudioManager } from '../../src';
 import { FollowComponent, HealthComponent, PositionComponent, SpriteComponent, InputComponent, DestroyDeadEntityComponent, CollisionComponent } from './components';
-import { ChaseDefaultState } from './chase-state';
 import { EntityFactory } from './factory';
 
 
@@ -12,12 +11,16 @@ export class ChaseRenderSystem extends System implements RenderableSystem {
     constructor(engine: Engine, player: Entity) {
         super(engine);
         this.player = player;
+    }
+
+    stage() {
         this.subscribeToEventForImmediateAttendance([['DeleteEntity', this.onDeleteEntity.bind(this)]]);
         this.subscribeToEvents([['Collision', this.onCollision.bind(this)]]);
+    }
 
-        document.addEventListener('fullscreenchange', (event) => {
-            this.engine.pixiApp.renderer.resize(window.innerWidth, window.innerHeight);
-        });
+    unstage() {
+        this.unsubscribeToEvent( 'DeleteEntity', this.onDeleteEntity.bind(this) );
+        this.unsubscribeToEvent( 'Collision', this.onCollision.bind(this) );
     }
 
     render(): void {
@@ -79,6 +82,38 @@ export class ChaseRenderSystem extends System implements RenderableSystem {
             });
         });
     }
+}export class PauseRenderSystem extends System implements RenderableSystem {
+
+    private pauseScreen: Entity;
+
+    constructor(engine: Engine, pauseScreen: Entity) {
+        super(engine);
+        this.pauseScreen = pauseScreen;
+    }
+
+    stage() {
+    }
+
+    unstage() {
+    }
+
+    render(): void {}
+
+    update(delta: number) {}
+
+    cleanup() {}
+
+    destroy() {
+        let component = <SpriteComponent> this.getEntityComponentOfClass(SpriteComponent, this.pauseScreen);
+        component.sprites.forEach(sprite => {
+            sprite.destroy({
+                children: false,
+                texture: false,
+                baseTexture: false
+            });
+        });
+        this.engine.entityManager.removeEntity( this.pauseScreen );
+    }
 }
 
 
@@ -87,6 +122,10 @@ export class MotionSystem extends System {
     constructor(engine: Engine, player: Entity) {
         super(engine);
     }
+
+    stage() {}
+
+    unstage() {}
 
     update(delta: number) {
         let inputEntities = this.getEntitiesBySignature( [InputComponent, PositionComponent], [HealthComponent] );
@@ -163,9 +202,10 @@ export class InputSystem extends System {
 
     constructor(engine: Engine) {
         super(engine);
-
         this.keyboardManager = new KeyboardManager();
+    }
 
+    stage() {
         let inputComponents = () => { return this.engine.entityManager.getComponentsOfClass(InputComponent) };
 
         const uppress = () => { inputComponents().forEach((component: InputComponent) => component.up = true) };
@@ -183,8 +223,12 @@ export class InputSystem extends System {
         const tpress = () => { inputComponents().forEach((component: InputComponent) => component.teleport = true) };
         const trelease = () => { inputComponents().forEach((component: InputComponent) => component.teleport = false) };
 
+        const ppress = () => {};
+        const prelease = () => { this.publishEvent({ type: 'Pause', msg: undefined }) };
+
         const rpress = () => {};
-        const rrelease = () => { engine.setState( new ChaseDefaultState(engine) ) };
+        //const rrelease = () => { this.engine.stop(); this.engine.setState( new ChaseDefaultState(this.engine, true), true ); this.engine.start(); };
+        const rrelease = () => { this.publishEvent({ type: 'Reset', msg: undefined }) };
 
         const fpress = () => { };
         const frelease = () => {
@@ -200,22 +244,72 @@ export class InputSystem extends System {
         this.keyboardManager.registerKeyEventHandler('ArrowLeft', leftpress, leftrelease);
         this.keyboardManager.registerKeyEventHandler('ArrowRight', rightpress, rightrelease);
         this.keyboardManager.registerKeyEventHandler('t', tpress, trelease);
+        this.keyboardManager.registerKeyEventHandler('p', ppress, prelease);
         this.keyboardManager.registerKeyEventHandler('r', rpress, rrelease);
         this.keyboardManager.registerKeyEventHandler('f', fpress, frelease);
+    }
+
+    unstage() {
+        this.keyboardManager.unregisterKeyEventHandler('ArrowUp');
+        this.keyboardManager.unregisterKeyEventHandler('ArrowDown');
+        this.keyboardManager.unregisterKeyEventHandler('ArrowLeft');
+        this.keyboardManager.unregisterKeyEventHandler('ArrowRight');
+        this.keyboardManager.unregisterKeyEventHandler('t');
+        this.keyboardManager.unregisterKeyEventHandler('p');
+        this.keyboardManager.unregisterKeyEventHandler('r');
+        this.keyboardManager.unregisterKeyEventHandler('f');
     }
 
     update(delta: number) {}
 
     cleanup() {}
 
-    destroy() {
-        this.keyboardManager.unregisterKeyEventHandler('ArrowUp');
-        this.keyboardManager.unregisterKeyEventHandler('ArrowDown');
-        this.keyboardManager.unregisterKeyEventHandler('ArrowLeft');
-        this.keyboardManager.unregisterKeyEventHandler('ArrowRight');
-        this.keyboardManager.unregisterKeyEventHandler('t');
-        this.keyboardManager.unregisterKeyEventHandler('r');
+    destroy() {}
+}
+
+
+export class PauseInputSystem extends System {
+
+    private keyboardManager: KeyboardManager;
+
+    constructor(engine: Engine) {
+        super(engine);
+        this.keyboardManager = new KeyboardManager();
     }
+
+    stage() {
+
+        const rpress = () => {};
+        const rrelease = () => { this.publishEvent({ type: 'Reset', msg: undefined }) };
+
+        const ppress = () => {};
+        const prelease = () => { this.publishEvent({ type: 'Pause', msg: undefined }) };
+
+        const fpress = () => { };
+        const frelease = () => {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                this.engine.pixiApp.view.requestFullscreen();
+            }
+        };
+
+        this.keyboardManager.registerKeyEventHandler('p', ppress, prelease);
+        this.keyboardManager.registerKeyEventHandler('r', rpress, rrelease);
+        this.keyboardManager.registerKeyEventHandler('f', fpress, frelease);
+    }
+
+    unstage() {
+        this.keyboardManager.unregisterKeyEventHandler('p');
+        this.keyboardManager.unregisterKeyEventHandler('r');
+        this.keyboardManager.unregisterKeyEventHandler('f');
+    }
+
+    update(delta: number) {}
+
+    cleanup() {}
+
+    destroy() {}
 }
 
 
@@ -226,7 +320,14 @@ export class HealthSystem extends System {
     constructor(engine: Engine, player: Entity) {
         super(engine);
         this.player = player;
-        this.subscribeToEvents([['Collision', this.onCollision.bind(this)]]);
+    }
+
+    stage() {
+        this.subscribeToEvents( [['Collision', this.onCollision.bind(this)]] );
+    }
+
+    unstage() {
+        this.unsubscribeToEvent( 'Collision', this.onCollision.bind(this) );
     }
 
     update(delta: number) {}
@@ -263,6 +364,10 @@ export class CollisionSystem extends System {
     constructor(engine: Engine) {
         super(engine);
     }
+
+    stage() {}
+
+    unstage() {}
 
     update(delta: number) {
         let hash = new Map<string, Set<Entity>>();
@@ -303,11 +408,20 @@ export class SoundSystem extends System {
         super(engine);
         this.audio = audio;
         this.player = player;
+    }
+
+    stage() {
         this.subscribeToEvents([
             ['PlayerDied', this.onPlayerDied.bind(this)],
             ['EnemyDied', this.onEnemyDied.bind(this)],
             ['Teleport', this.onTeleport.bind(this)]
         ]);
+    }
+
+    unstage() {
+        this.unsubscribeToEvent( 'PlayerDied', this.onPlayerDied.bind(this) );
+        this.unsubscribeToEvent( 'EnemyDied', this.onEnemyDied.bind(this) );
+        this.unsubscribeToEvent( 'Teleport', this.onTeleport.bind(this) );
     }
 
     onPlayerDied(event: GameEvent) {
@@ -335,6 +449,10 @@ export class EntityDeleteSystem extends System {
     constructor(engine: Engine) {
         super(engine);
     }
+
+    stage() {}
+
+    unstage() {}
 
     update(delta: number) {
         let entities = this.getEntitiesBySignature( [DestroyDeadEntityComponent, HealthComponent] );
