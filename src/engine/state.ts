@@ -32,6 +32,7 @@ export abstract class GameState {
 
     start(callback: () => void) {
         const next = () => {
+            this.init();
             this.stage();
             this.stageSystems();
             callback();
@@ -40,7 +41,7 @@ export abstract class GameState {
         if (this.useResourceLoader) {
             this.useResourceLoader = false;
             this.resourceLoader = new ResourceLoader(this.imageResourcesUrls, this.soundResourcesUrls, this.engine.pixiApp);
-            this.resourceLoader.downloadResources(() => { this.init(); next(); });
+            this.resourceLoader.downloadResources( next );
         } else {
             next();
         }
