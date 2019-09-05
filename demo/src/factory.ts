@@ -176,20 +176,21 @@ export class EntityFactory {
 
     createPauseScreen() {
         const pause = this.engine.entityManager.createNewEntity();
-        const size = this.engine.pixiApp.renderer.width < this.engine.pixiApp.renderer.height
-            ? this.engine.pixiApp.renderer.width
-            : this.engine.pixiApp.renderer.height;
+        const width = this.engine.pixiApp.renderer.width;
+        const height = this.engine.pixiApp.renderer.height;
+        const size = width < height ? width : height;
         const pSprite = new PIXI.Sprite( PIXI.Loader.shared.resources['img/pause.png'].texture );
         pSprite.width = size;
         pSprite.height = size;
+        pSprite.anchor.x = 0.5;
+        pSprite.anchor.y = 0.5;
+        pSprite.x = width/2;
+        pSprite.y = height/2;
         pSprite.zIndex = 100;
         pSprite.visible = true;
         this.engine.pixiApp.stage.addChild(pSprite);
-        let components: Component[] = [
-            new SpriteComponent([pSprite], 0, true),
-            new PositionComponent(0, 0, 0, 0)
-        ];
-        components.forEach( (component: Component) => this.engine.entityManager.addComponent(component, pause));
+        const component = new SpriteComponent([pSprite], 0, true);
+        this.engine.entityManager.addComponent(component, pause);
         return pause;
     }
 }

@@ -82,7 +82,10 @@ export class ChaseRenderSystem extends System implements RenderableSystem {
             });
         });
     }
-}export class PauseRenderSystem extends System implements RenderableSystem {
+}
+
+
+export class PauseRenderSystem extends System implements RenderableSystem {
 
     private pauseScreen: Entity;
 
