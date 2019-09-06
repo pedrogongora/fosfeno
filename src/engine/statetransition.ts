@@ -78,25 +78,33 @@ export class StateTransitionSystem {
         });
     }
 
-    private getNext(event: GameEvent): [string, GameState, boolean, boolean] {
+    private getNextInstance(event: GameEvent): [string, GameState, boolean, boolean] {
         const transition = this.transitionRules.get( this.current ).get( event.type );
-        const next = transition.forceNewNext || !this.stateInstances.get( transition.next )
-            ? this.createStateInstance( transition.next, transition.loadResources )
-            : this.stateInstances.get( transition.next );
+        console.log('applying transition: ', transition);
+        let next: GameState;
+        if ( transition.forceNewNext || !this.stateInstances.get( transition.next ) ) {
+            //console.log('creating new instance of ' + transition.next);
+            next = this.createStateInstance( transition.next, transition.loadResources );
+        } else {
+            //console.log('using existing instance of ' + transition.next + ', instance: '+ this.stateInstances.get( transition.next ));
+            next = this.stateInstances.get( transition.next );
+        }
         return [transition.next, next, transition.destroyCurrent, transition.resetEngine];
     }
 
     private eventCallback(event: GameEvent) {
         new Promise(resolve => { this.engine.stop(resolve) })
         .then(() => {
-            const [name, instance, destroyCurrent, resetEngine] = this.getNext( event );
+            const [name, instance, destroyCurrent, resetEngine] = this.getNextInstance( event );
             this.unsubscribeToEvents();
             if ( destroyCurrent ) {
+                //console.log('destroying current state')
                 const currentInstance = this.stateInstances.get( this.current );
                 currentInstance.destroySystems();
                 currentInstance.destroy();
                 this.stateInstances.delete( this.current );
             }
+            //console.log('setting state instance: ', instance)
             this.engine.setState( instance, resetEngine );
             this.subscribeToEvents();
             this.current = name;

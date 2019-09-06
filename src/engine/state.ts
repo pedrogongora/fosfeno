@@ -9,10 +9,12 @@ export abstract class GameState {
     private useResourceLoader: boolean;
     private imageResourcesUrls: string[];
     private soundResourcesUrls: string[];
+    private initialized: boolean;
 
     constructor(engine: Engine, useResourceLoader: boolean) {
         this.engine = engine;
         this.useResourceLoader = useResourceLoader;
+        this.initialized = false;
     }
     
     abstract init(): void;
@@ -32,7 +34,10 @@ export abstract class GameState {
 
     start(callback: () => void) {
         const next = () => {
-            this.init();
+            if ( !this.initialized ) {
+                this.init();
+                this.initialized = true;
+            }
             this.stage();
             this.stageSystems();
             callback();
