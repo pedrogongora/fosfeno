@@ -94,7 +94,7 @@ export class StateTransitionSystem {
 
     private hasNext( event:GameEvent ) {
         const transition = this.transitionRules.get( this.current ).get( event.type );
-        return transition !== null || transition !== undefined;
+        return transition !== null && transition !== undefined;
     }
 
     private eventCallback(event: GameEvent) {
