@@ -98,9 +98,9 @@ export class StateTransitionSystem {
     }
 
     private eventCallback(event: GameEvent) {
-        new Promise(resolve => { this.engine.stop(resolve) })
-        .then(() => {
-            if ( this.hasNext(event) ) {
+        if ( this.hasNext(event) ) {
+            new Promise(resolve => { this.engine.stop(resolve) })
+            .then(() => {
                 const [name, instance, destroyCurrent, resetEngine] = this.getNextInstance( event );
                 this.unsubscribeToEvents();
                 if ( destroyCurrent ) {
@@ -115,9 +115,9 @@ export class StateTransitionSystem {
                 this.subscribeToEvents();
                 this.current = name;
                 this.stateInstances.set( name, instance );
-            }
-            this.engine.start();
-        });
+                this.engine.start();
+            });
+        }
     }
 
 }
