@@ -92,23 +92,30 @@ export class StateTransitionSystem {
         return [transition.next, next, transition.destroyCurrent, transition.resetEngine];
     }
 
+    private hasNext( event:GameEvent ) {
+        const transition = this.transitionRules.get( this.current ).get( event.type );
+        return transition !== null || transition !== undefined;
+    }
+
     private eventCallback(event: GameEvent) {
         new Promise(resolve => { this.engine.stop(resolve) })
         .then(() => {
-            const [name, instance, destroyCurrent, resetEngine] = this.getNextInstance( event );
-            this.unsubscribeToEvents();
-            if ( destroyCurrent ) {
-                //console.log('destroying current state')
-                const currentInstance = this.stateInstances.get( this.current );
-                currentInstance.destroySystems();
-                currentInstance.destroy();
-                this.stateInstances.delete( this.current );
+            if ( this.hasNext(event) ) {
+                const [name, instance, destroyCurrent, resetEngine] = this.getNextInstance( event );
+                this.unsubscribeToEvents();
+                if ( destroyCurrent ) {
+                    //console.log('destroying current state')
+                    const currentInstance = this.stateInstances.get( this.current );
+                    currentInstance.destroySystems();
+                    currentInstance.destroy();
+                    this.stateInstances.delete( this.current );
+                }
+                //console.log('setting state instance: ', instance)
+                this.engine.setState( instance, resetEngine );
+                this.subscribeToEvents();
+                this.current = name;
+                this.stateInstances.set( name, instance );
             }
-            //console.log('setting state instance: ', instance)
-            this.engine.setState( instance, resetEngine );
-            this.subscribeToEvents();
-            this.current = name;
-            this.stateInstances.set( name, instance );
             this.engine.start();
         });
     }
