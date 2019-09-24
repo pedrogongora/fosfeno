@@ -181,20 +181,19 @@ class Handler {
 
     private getHandler() {
         const handler = (event: MouseEvent) => {
+            const now = Date.now();
+            if ( !this.timestamp ) this.timestamp = now;
+            const last = this.timestamp;
+
+            if ( now - last < this.options.throttle ) return;
+            this.timestamp = now;
+            
             if ( this.options.preventDefault ) {
                 event.preventDefault();
             }
             if ( this.options.stopPropagation ) {
                 event.stopPropagation();
             }
-
-            const now = Date.now();
-            const last = this.timestamp
-                ? this.timestamp
-                : now;
-
-            if ( now - last < this.options.throttle ) return;
-            this.timestamp = now;
     
             if ( this.options.fireGameEvent ) {
                 this.engine.eventQueue.publish({

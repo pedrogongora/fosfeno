@@ -164,8 +164,6 @@ export class MobileInputManager {
             if ( now - last < opts.throttle ) return;
             this.timestamps.set( opts.eventType, now );
 
-            console.log('m ev: ', event, opts, opts.callback, opts.callback !== undefined);
-
             if ( opts.preventDefault ) {
                 event.preventDefault();
             }
@@ -186,7 +184,6 @@ export class MobileInputManager {
             }
     
             if ( opts.callback ) {
-                console.log('calling cb: ', opts.callback, opts.callback !== undefined);
                 opts.callback( event );
             }
         };
