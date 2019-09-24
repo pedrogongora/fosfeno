@@ -167,7 +167,7 @@ export class MobileInputManager {
             if ( !this.ts ) this.ts = now;
             if ( now - this.ts > 1000 ) {
                 this.ts = now;
-                console.log('m ev: ', event, opts);
+                console.log('m ev: ', event, opts, opts.callback, opts.callback !== undefined);
             }
 
             if ( !opts ) return;
@@ -193,7 +193,7 @@ export class MobileInputManager {
             }
     
             if ( opts.callback ) {
-                if ( now - this.ts > 1000 ) {
+                if ( now - this.ts > 1000 || now - this.ts === 0 ) {
                     this.ts = now;
                     console.log('calling cb: ', opts.callback, opts.callback !== undefined);
                 }
