@@ -115,6 +115,23 @@ export class MobileInputManager {
         opts.target.addEventListener( opts.eventType, handler );
     }
 
+    unregisterMobileEvent( eventType: MobileEventType ) {
+        const opts = this.userOptions.get( eventType );
+        const handler = this.userHandlers.get( eventType );
+
+        opts.target.removeEventListener( opts.eventType, handler );
+
+        this.userOptions.delete( eventType );
+        this.userHandlers.delete( eventType );
+    }
+
+    unregisterAll() {
+        const types = this.userOptions.keys();
+        for ( let type of types ) {
+            this.unregisterMobileEvent( type as MobileEventType );
+        }
+    }
+
     private mergeDefaultOptions(userOptions: MobileEventRegisterOptions) {
         const defaults: MobileEventRegisterOptions = {
             eventType: userOptions.eventType,
