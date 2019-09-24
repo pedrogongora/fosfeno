@@ -28,7 +28,8 @@ export class ChaseDefaultState extends GameState {
             'sound/meow.wav',
             'sound/splat.wav'
         ];
-        this.setResourceUrls(this.imageResources, this.soundResources);
+        //this.setResourceUrls(this.imageResources, this.soundResources);
+        this.setResourceUrls(this.imageResources, []);
     }
 
     private createMainEntities() {
@@ -47,7 +48,7 @@ export class ChaseDefaultState extends GameState {
             new CollisionSystem( this.engine ),
             new HealthSystem( this.engine, this.player ),
             new ChaseRenderSystem( this.engine, this.player ),
-            new SoundSystem( this.engine, this.resourceLoader.audio, this.player ),
+            //new SoundSystem( this.engine, this.resourceLoader.audio, this.player ),
             new EntityDeleteSystem( this.engine ),
         ];
     }

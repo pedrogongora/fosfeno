@@ -75,8 +75,7 @@ export class InputComponent implements Component {
         public down: boolean,
         public left: boolean,
         public right: boolean,
-        public teleport: boolean,
-        public reset: boolean
+        public teleport: boolean
     ) {}
 
 }

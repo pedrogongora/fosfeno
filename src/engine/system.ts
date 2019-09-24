@@ -54,6 +54,12 @@ export abstract class System {
         this.engine.eventQueue.unsubscribe( eventType, callback );
     }
 
+    protected unsubscribeToEvents(subscriptions: [string,((event: GameEvent) => void)][]) {
+        subscriptions.forEach(subscription => {
+            this.unsubscribeToEvent( subscription[0], subscription[1] );
+        });
+    }
+
     protected publishEvent(event: GameEvent) {
         this.engine.eventQueue.publish(event);
     }

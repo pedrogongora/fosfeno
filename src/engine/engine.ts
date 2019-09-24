@@ -5,6 +5,9 @@ import { EventQueue } from './events';
 import { GameProperties } from './gameprops';
 import { GameState } from './state';
 import { StateTransitionDescription, StateTransitionSystem } from './statetransition';
+import { KeyboardInputManager } from './input-keyboard';
+import { MouseInputManager } from './input-mouse';
+import { MobileInputManager } from './input-mobile';
 
 
 export class Engine {
@@ -19,6 +22,12 @@ export class Engine {
         transparent: false,
         resolution: window.devicePixelRatio
     };
+    readonly input: {
+        keyboard: KeyboardInputManager,
+        mouse: MouseInputManager,
+        mobile: MobileInputManager
+    };
+
     private stateTransitions: StateTransitionDescription;
     private stateTransitionSystem: StateTransitionSystem;
     private currentState: GameState;
@@ -31,6 +40,11 @@ export class Engine {
         this.entityManager = new EntityManager(properties, this.eventQueue),
         this.pixiApp = new PIXI.Application({...this.pixiDefaultProperties, ...properties.pixiProperties});
         this.pixiApp.stage.sortableChildren = true;
+        this.input = {
+            keyboard: new KeyboardInputManager( this ),
+            mouse: new MouseInputManager( this ),
+            mobile: new MobileInputManager( this )
+        }
         this.running = false;
         this.pendingActions = [];
     }

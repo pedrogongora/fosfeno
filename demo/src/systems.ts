@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { Entity,System,RenderableSystem,Engine,GameEvent,KeyboardManager,AudioManager } from '../../src';
+import { Entity,System,RenderableSystem,Engine,GameEvent,AudioManager } from '../../src';
 import { FollowComponent, HealthComponent, PositionComponent, SpriteComponent, InputComponent, DestroyDeadEntityComponent, CollisionComponent } from './components';
 import { EntityFactory } from './factory';
 
@@ -7,20 +7,25 @@ import { EntityFactory } from './factory';
 export class ChaseRenderSystem extends System implements RenderableSystem {
 
     private player: Entity;
+    private subscriptions: [string, (ev: GameEvent) => void][];
 
     constructor(engine: Engine, player: Entity) {
         super(engine);
         this.player = player;
+        this.subscriptions = [
+            ['Collision',  this.onCollision.bind(this)],
+            ['Fullscreen', this.onFullscreen.bind(this)],
+        ];
     }
 
     stage() {
         this.subscribeToEventForImmediateAttendance([['DeleteEntity', this.onDeleteEntity.bind(this)]]);
-        this.subscribeToEvents([['Collision', this.onCollision.bind(this)]]);
+        this.subscribeToEvents( this.subscriptions );
     }
 
     unstage() {
         this.unsubscribeToEvent( 'DeleteEntity', this.onDeleteEntity.bind(this) );
-        this.unsubscribeToEvent( 'Collision', this.onCollision.bind(this) );
+        this.unsubscribeToEvents( this.subscriptions );
     }
 
     render(): void {
@@ -50,22 +55,6 @@ export class ChaseRenderSystem extends System implements RenderableSystem {
         });
     }
 
-    onCollision(event: GameEvent) {
-        const playerPosition: PositionComponent = <PositionComponent> this.getEntityComponentOfClass(PositionComponent, this.player);
-        const isPlayer = event.msg.x === playerPosition.boardX && event.msg.y === playerPosition.boardY;
-        let factory = new EntityFactory(this.engine);
-        factory.createSplat(event.msg.x, event.msg.y, isPlayer);
-    }
-
-    onDeleteEntity(event: GameEvent) {
-        let entity: Entity = event.msg;
-        let sprite = <SpriteComponent> this.getEntityComponentOfClass(SpriteComponent, entity);
-        if (sprite) {
-            sprite.visible = false;
-            sprite.sprites.forEach(s => { s.destroy() });
-        }
-    }
-
     update(delta: number) {}
 
     cleanup() {}
@@ -82,22 +71,52 @@ export class ChaseRenderSystem extends System implements RenderableSystem {
             });
         });
     }
+
+    private onCollision(event: GameEvent) {
+        const playerPosition: PositionComponent = <PositionComponent> this.getEntityComponentOfClass(PositionComponent, this.player);
+        const isPlayer = event.msg.x === playerPosition.boardX && event.msg.y === playerPosition.boardY;
+        let factory = new EntityFactory(this.engine);
+        factory.createSplat(event.msg.x, event.msg.y, isPlayer);
+    }
+
+    private onFullscreen(event: GameEvent) {
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        } else {
+            this.engine.pixiApp.view.requestFullscreen();
+        }
+    }
+
+    private onDeleteEntity(event: GameEvent) {
+        let entity: Entity = event.msg;
+        let sprite = <SpriteComponent> this.getEntityComponentOfClass(SpriteComponent, entity);
+        if (sprite) {
+            sprite.visible = false;
+            sprite.sprites.forEach(s => { s.destroy() });
+        }
+    }
 }
 
 
 export class PauseRenderSystem extends System implements RenderableSystem {
 
     private pauseScreen: Entity;
+    private subscriptions: [string, (ev: GameEvent) => void][];
 
     constructor(engine: Engine, pauseScreen: Entity) {
         super(engine);
         this.pauseScreen = pauseScreen;
+        this.subscriptions = [
+            ['Fullscreen', this.onFullscreen.bind(this)],
+        ];
     }
 
     stage() {
+        this.subscribeToEvents( this.subscriptions );
     }
 
     unstage() {
+        this.unsubscribeToEvents( this.subscriptions );
     }
 
     render(): void {}
@@ -116,6 +135,14 @@ export class PauseRenderSystem extends System implements RenderableSystem {
             });
         });
         this.engine.entityManager.removeEntity( this.pauseScreen );
+    }
+
+    private onFullscreen(event: GameEvent) {
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        } else {
+            this.engine.pixiApp.view.requestFullscreen();
+        }
     }
 }
 
@@ -201,69 +228,61 @@ export class MotionSystem extends System {
 
 export class InputSystem extends System {
 
-    private keyboardManager: KeyboardManager;
-
     constructor(engine: Engine) {
         super(engine);
-        this.keyboardManager = new KeyboardManager();
     }
 
     stage() {
         let inputComponents = () => { return this.engine.entityManager.getComponentsOfClass(InputComponent) };
 
-        const uppress = () => { inputComponents().forEach((component: InputComponent) => component.up = true) };
-        const uprelease = () => { inputComponents().forEach((component: InputComponent) => component.up = false) };
-
-        const downpress = () => { inputComponents().forEach((component: InputComponent) => component.down = true) };
-        const downrelease = () => { inputComponents().forEach((component: InputComponent) => component.down = false) };
-
-        const leftpress = () => { inputComponents().forEach((component: InputComponent) => component.left = true); };
-        const leftrelease = () => { inputComponents().forEach((component: InputComponent) => component.left = false) };
-
-        const rightpress = () => { inputComponents().forEach((component: InputComponent) => component.right = true) };
-        const rightrelease = () => { inputComponents().forEach((component: InputComponent) => component.right = false) };
-
-        const tpress = () => { inputComponents().forEach((component: InputComponent) => component.teleport = true) };
-        const trelease = () => { inputComponents().forEach((component: InputComponent) => component.teleport = false) };
-
-        const ppress = () => {};
-        const prelease = () => { this.publishEvent({ type: 'Pause', msg: undefined }) };
-
-        const rpress = () => {};
-        //const rrelease = () => { this.engine.stop(); this.engine.setState( new ChaseDefaultState(this.engine, true), true ); this.engine.start(); };
-        const rrelease = () => { this.publishEvent({ type: 'Reset', msg: undefined }) };
-
-        const fpress = () => { };
-        const frelease = () => {
-            if (document.fullscreenElement) {
-                document.exitFullscreen();
-            } else {
-                this.engine.pixiApp.view.requestFullscreen();
-            }
-        };
-
-        this.keyboardManager.registerKeyEventHandler('ArrowUp', uppress, uprelease);
-        this.keyboardManager.registerKeyEventHandler('ArrowDown', downpress, downrelease);
-        this.keyboardManager.registerKeyEventHandler('ArrowLeft', leftpress, leftrelease);
-        this.keyboardManager.registerKeyEventHandler('ArrowRight', rightpress, rightrelease);
-        this.keyboardManager.registerKeyEventHandler('t', tpress, trelease);
-        this.keyboardManager.registerKeyEventHandler('p', ppress, prelease);
-        this.keyboardManager.registerKeyEventHandler('r', rpress, rrelease);
-        this.keyboardManager.registerKeyEventHandler('f', fpress, frelease);
+        this.engine.input.keyboard.registerKeyEventHandler({
+            key: 'ArrowUp',
+            keydownCallback: () => { inputComponents().forEach((component: InputComponent) => component.up = true) },
+            keyupCallback: () => { inputComponents().forEach((component: InputComponent) => component.up = false) }
+        });
+        this.engine.input.keyboard.registerKeyEventHandler({
+            key: 'ArrowDown',
+            keydownCallback: () => { inputComponents().forEach((component: InputComponent) => component.down = true) },
+            keyupCallback: () => { inputComponents().forEach((component: InputComponent) => component.down = false) }
+        });
+        this.engine.input.keyboard.registerKeyEventHandler({
+            key: 'ArrowLeft',
+            keydownCallback: () => { inputComponents().forEach((component: InputComponent) => component.left = true); },
+            keyupCallback: () => { inputComponents().forEach((component: InputComponent) => component.left = false) }
+        });
+        this.engine.input.keyboard.registerKeyEventHandler({
+            key: 'ArrowRight',
+            keydownCallback: () => { inputComponents().forEach((component: InputComponent) => component.right = true) },
+            keyupCallback: () => { inputComponents().forEach((component: InputComponent) => component.right = false) }
+        });
+        this.engine.input.keyboard.registerKeyEventHandler({
+            key: 't',
+            keydownCallback: () => { inputComponents().forEach((component: InputComponent) => component.teleport = true) },
+            keyupCallback: () => { inputComponents().forEach((component: InputComponent) => component.teleport = false) }
+        });
+        this.engine.input.keyboard.registerKeyEventHandler({
+            key: 'p',
+            fireGameEvents: true,
+            keyupGameEventType: 'Pause'
+        });
+        this.engine.input.keyboard.registerKeyEventHandler({
+            key: 'r',
+            fireGameEvents: true,
+            keyupGameEventType: 'Reset'
+        });
+        this.engine.input.keyboard.registerKeyEventHandler({
+            key: 'f',
+            fireGameEvents: true,
+            keyupGameEventType: 'Fullscreen'
+        });
     }
 
     unstage() {
-        this.keyboardManager.unregisterKeyEventHandler('ArrowUp');
-        this.keyboardManager.unregisterKeyEventHandler('ArrowDown');
-        this.keyboardManager.unregisterKeyEventHandler('ArrowLeft');
-        this.keyboardManager.unregisterKeyEventHandler('ArrowRight');
-        this.keyboardManager.unregisterKeyEventHandler('t');
-        this.keyboardManager.unregisterKeyEventHandler('p');
-        this.keyboardManager.unregisterKeyEventHandler('r');
-        this.keyboardManager.unregisterKeyEventHandler('f');
+        this.engine.input.keyboard.unregisterAll();
     }
 
-    update(delta: number) {}
+    update(delta: number) {
+    }
 
     cleanup() {}
 
@@ -273,39 +292,30 @@ export class InputSystem extends System {
 
 export class PauseInputSystem extends System {
 
-    private keyboardManager: KeyboardManager;
-
     constructor(engine: Engine) {
         super(engine);
-        this.keyboardManager = new KeyboardManager();
     }
 
     stage() {
-
-        const rpress = () => {};
-        const rrelease = () => { this.publishEvent({ type: 'Reset', msg: undefined }) };
-
-        const ppress = () => {};
-        const prelease = () => { this.publishEvent({ type: 'Pause', msg: undefined }) };
-
-        const fpress = () => { };
-        const frelease = () => {
-            if (document.fullscreenElement) {
-                document.exitFullscreen();
-            } else {
-                this.engine.pixiApp.view.requestFullscreen();
-            }
-        };
-
-        this.keyboardManager.registerKeyEventHandler('p', ppress, prelease);
-        this.keyboardManager.registerKeyEventHandler('r', rpress, rrelease);
-        this.keyboardManager.registerKeyEventHandler('f', fpress, frelease);
+        this.engine.input.keyboard.registerKeyEventHandler({
+            key: 'p',
+            fireGameEvents: true,
+            keyupGameEventType: 'Pause'
+        });
+        this.engine.input.keyboard.registerKeyEventHandler({
+            key: 'r',
+            fireGameEvents: true,
+            keyupGameEventType: 'Reset'
+        });
+        this.engine.input.keyboard.registerKeyEventHandler({
+            key: 'f',
+            fireGameEvents: true,
+            keyupGameEventType: 'Fullscreen'
+        });
     }
 
     unstage() {
-        this.keyboardManager.unregisterKeyEventHandler('p');
-        this.keyboardManager.unregisterKeyEventHandler('r');
-        this.keyboardManager.unregisterKeyEventHandler('f');
+        this.engine.input.keyboard.unregisterAll();
     }
 
     update(delta: number) {}
@@ -319,18 +329,22 @@ export class PauseInputSystem extends System {
 export class HealthSystem extends System {
 
     private player: Entity;
+    private subscriptions: [string, (ev: GameEvent) => void][];
 
     constructor(engine: Engine, player: Entity) {
         super(engine);
         this.player = player;
+        this.subscriptions = [
+            ['Collision', this.onCollision.bind(this)]
+        ];
     }
 
     stage() {
-        this.subscribeToEvents( [['Collision', this.onCollision.bind(this)]] );
+        this.subscribeToEvents( this.subscriptions );
     }
 
     unstage() {
-        this.unsubscribeToEvent( 'Collision', this.onCollision.bind(this) );
+        this.unsubscribeToEvents( this.subscriptions );
     }
 
     update(delta: number) {}
@@ -406,25 +420,25 @@ export class SoundSystem extends System {
 
     private audio: AudioManager;
     private player: Entity;
+    private subscriptions: [string, (ev: GameEvent) => void][];
 
     constructor(engine: Engine, audio: AudioManager, player: Entity) {
         super(engine);
         this.audio = audio;
         this.player = player;
+        this.subscriptions = [
+            [ 'PlayerDied', this.onPlayerDied.bind(this) ],
+            [ 'EnemyDied', this.onEnemyDied.bind(this) ],
+            [ 'Teleport', this.onTeleport.bind(this) ]
+        ];
     }
 
     stage() {
-        this.subscribeToEvents([
-            ['PlayerDied', this.onPlayerDied.bind(this)],
-            ['EnemyDied', this.onEnemyDied.bind(this)],
-            ['Teleport', this.onTeleport.bind(this)]
-        ]);
+        this.subscribeToEvents(this.subscriptions);
     }
 
     unstage() {
-        this.unsubscribeToEvent( 'PlayerDied', this.onPlayerDied.bind(this) );
-        this.unsubscribeToEvent( 'EnemyDied', this.onEnemyDied.bind(this) );
-        this.unsubscribeToEvent( 'Teleport', this.onTeleport.bind(this) );
+        this.unsubscribeToEvents( this.subscriptions );
     }
 
     onPlayerDied(event: GameEvent) {

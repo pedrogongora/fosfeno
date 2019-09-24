@@ -1,12 +1,20 @@
 import { Engine, StateTransitionDescription } from '../../src';
 import * as states from './chase-state';
 
+
+declare let window: any;
+
+
 window.addEventListener('load', function () {
     let engine = new Engine({
         boardWidth: 40,
         boardHeight: 22,
         enemies: 20,
-        blocks: 10
+        blocks: 10,
+        pixiProperties: {
+            antialias: true,
+            resolution: 1
+        }
     });
     document.getElementById( 'content' ).appendChild( engine.pixiApp.view );
 
@@ -54,4 +62,5 @@ window.addEventListener('load', function () {
     };
     engine.setTransitionSystem( sts, states );
     engine.start();
+    window.engine = engine;
 });

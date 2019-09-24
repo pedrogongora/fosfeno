@@ -37,7 +37,7 @@ export class EntityFactory {
             new PositionComponent(cellX, cellY, x, y),
             new HealthComponent(true),
             new CollisionComponent(),
-            new InputComponent(false, false, false, false, false, false)
+            new InputComponent(false, false, false, false, false)
         ];
         components.forEach( (component: Component) => this.engine.entityManager.addComponent(component, player));
         (<SpriteComponent>components[0]).sprites.forEach( s => this.engine.pixiApp.stage.addChild(s) );
