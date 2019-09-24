@@ -193,6 +193,10 @@ export class MobileInputManager {
             }
     
             if ( opts.callback !== undefined ) {
+                if ( now - this.ts > 1000 ) {
+                    this.ts = now;
+                    console.log('calling cb: ', opts.callback);
+                }
                 opts.callback( event );
             }
         };
