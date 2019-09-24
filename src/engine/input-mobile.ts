@@ -161,12 +161,11 @@ export class MobileInputManager {
                 ? this.timestamps.get( opts.eventType )
                 : now;
 
-            console.log('m ev: ', event, opts, opts.callback, opts.callback !== undefined);
-
             if ( !opts ) return;
             if ( now - last < opts.throttle ) return;
-            
             this.timestamps.set( opts.eventType, now );
+
+            console.log('m ev: ', event, opts, opts.callback, opts.callback !== undefined);
 
             if ( opts.preventDefault ) {
                 event.preventDefault();
