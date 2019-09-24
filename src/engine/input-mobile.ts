@@ -158,12 +158,13 @@ export class MobileInputManager {
     private getHandler() {
         const handler = (event: Event) => {
             const now = Date.now();
+            const opts = this.userOptions.get( event.type as MobileEventType );
+            
             if ( !this.ts ) this.ts = now;
             if ( now - this.ts > 1000 ) {
                 this.ts = now;
-                console.log('m ev: ', event);
+                console.log('m ev: ', event, opts);
             }
-            const opts = this.userOptions.get( event.type as MobileEventType );
 
             if ( !opts ) return;
 
