@@ -75,6 +75,8 @@ export class MobileInputManager {
     private statusOrientationHandler: (event: DeviceOrientationEvent) => void;
     private statusMotionHandler: (event: DeviceMotionEvent) => void;
 
+    private ts: number;
+
     readonly mobileStatus: BasicMobileStatus;
 
     constructor( engine: Engine ) {
@@ -155,6 +157,12 @@ export class MobileInputManager {
 
     private getHandler() {
         const handler = (event: Event) => {
+            const now = Date.now();
+            if ( !this.ts ) this.ts = now;
+            if ( now - this.ts > 1000 ) {
+                this.ts = now;
+                console.log('m ev: ', event);
+            }
             const opts = this.userOptions.get( event.type as MobileEventType );
 
             if ( !opts ) return;
@@ -166,7 +174,6 @@ export class MobileInputManager {
                 event.stopPropagation();
             }
 
-            const now = Date.now();
             const last = this.timestamps.get( opts.eventType )
                 ? this.timestamps.get( opts.eventType )
                 : now;
