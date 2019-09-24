@@ -237,8 +237,8 @@ export class MobileInputManager {
         this.statusTarget.addEventListener( 'touchmove', this.statusTouchHandler );
         this.statusTarget.addEventListener( 'touchend', this.statusTouchHandler );
         this.statusTarget.addEventListener( 'touchcancel', this.statusTouchHandler );
-        this.statusTarget.addEventListener( 'deviceorientation', this.statusOrientationHandler );
-        this.statusTarget.addEventListener( 'devicemotion', this.statusMotionHandler );
+        window.addEventListener( 'deviceorientation', this.statusOrientationHandler );
+        window.addEventListener( 'devicemotion', this.statusMotionHandler );
     }
 
     private unregisterStatusEvents() {
@@ -246,7 +246,7 @@ export class MobileInputManager {
         this.statusTarget.removeEventListener( 'touchmove', this.statusTouchHandler );
         this.statusTarget.removeEventListener( 'touchend', this.statusTouchHandler );
         this.statusTarget.removeEventListener( 'touchcancel', this.statusTouchHandler );
-        this.statusTarget.removeEventListener( 'deviceorientation', this.statusOrientationHandler );
-        this.statusTarget.removeEventListener( 'devicemotion', this.statusMotionHandler );
+        window.removeEventListener( 'deviceorientation', this.statusOrientationHandler );
+        window.removeEventListener( 'devicemotion', this.statusMotionHandler );
     }
 }
