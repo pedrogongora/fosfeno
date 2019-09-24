@@ -159,7 +159,14 @@ export class MobileInputManager {
         const handler = (event: Event) => {
             const now = Date.now();
             const opts = this.userOptions.get( event.type as MobileEventType );
-            
+            const last = this.timestamps.get( opts.eventType )
+                ? this.timestamps.get( opts.eventType )
+                : now;
+
+            if ( now - last < opts.throttle ) return;
+
+            this.timestamps.set( opts.eventType, now );
+
             if ( !this.ts ) this.ts = now;
             if ( now - this.ts > 1000 ) {
                 this.ts = now;
@@ -174,13 +181,6 @@ export class MobileInputManager {
             if ( opts.stopPropagation ) {
                 event.stopPropagation();
             }
-
-            const last = this.timestamps.get( opts.eventType )
-                ? this.timestamps.get( opts.eventType )
-                : now;
-
-            if ( now - last < opts.throttle ) return;
-            this.timestamps.set( opts.eventType, now );
     
             if ( opts.fireGameEvent ) {
                 const gameEventType = opts.gameEventType
@@ -195,7 +195,7 @@ export class MobileInputManager {
             }
     
             if ( opts.callback !== undefined ) {
-                setTimeout( () => opts.callback( event ), 0 );
+                opts.callback( event );
             }
         };
 
