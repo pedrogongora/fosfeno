@@ -94,7 +94,7 @@ export class MouseInputManager {
     unregisterMouseEvent(eventType: MouseEventType) {
         if ( this.userHandlers.get( eventType ) ) {
             const handler = this.userHandlers.get( eventType );
-            handler.suscribe();
+            handler.unsuscribe();
             this.userHandlers.delete( eventType );
         }
     }
@@ -172,7 +172,6 @@ class Handler {
 
     suscribe() {
         this.handler = this.getHandler();
-
         this.options.target.addEventListener( this.options.eventType, this.handler );
     }
 
