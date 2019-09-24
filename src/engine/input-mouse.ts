@@ -24,6 +24,7 @@ interface MouseEventRegisterOptions {
     callback?: (event: MouseEvent) => void,
     preventDefault?: boolean,
     stopPropagation?: boolean,
+    passive?: boolean,
     fireGameEvent?: boolean,
     gameEventType?: string,
     throttle?: number
@@ -112,6 +113,7 @@ export class MouseInputManager {
             target: this.engine.pixiApp.view,
             preventDefault: false,
             stopPropagation: false,
+            passive: true,
             fireGameEvent: false,
             gameEventType: defaultGameEvents[userOptions.eventType],
             throttle: 0
@@ -140,11 +142,11 @@ export class MouseInputManager {
             this.mouseStatus.y = event.clientY;
         }).bind(this);
 
-        this.statusTarget.addEventListener( 'mousedown', this.statusHandler );
-        this.statusTarget.addEventListener( 'mouseup', this.statusHandler );
-        this.statusTarget.addEventListener( 'mouseenter', this.statusHandler );
-        this.statusTarget.addEventListener( 'mouseleave', this.statusHandler );
-        this.statusTarget.addEventListener( 'mousemove', this.statusHandler );
+        this.statusTarget.addEventListener( 'mousedown', this.statusHandler, { passive: true } );
+        this.statusTarget.addEventListener( 'mouseup', this.statusHandler, { passive: true } );
+        this.statusTarget.addEventListener( 'mouseenter', this.statusHandler, { passive: true } );
+        this.statusTarget.addEventListener( 'mouseleave', this.statusHandler, { passive: true } );
+        this.statusTarget.addEventListener( 'mousemove', this.statusHandler, { passive: true } );
     }
 
     private unregisterStatusEvents() {
@@ -172,7 +174,7 @@ class Handler {
 
     suscribe() {
         this.handler = this.getHandler();
-        this.options.target.addEventListener( this.options.eventType, this.handler );
+        this.options.target.addEventListener( this.options.eventType, this.handler, { passive: this.options.passive } );
     }
 
     unsuscribe() {

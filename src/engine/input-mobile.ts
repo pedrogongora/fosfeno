@@ -31,6 +31,7 @@ interface MobileEventRegisterOptions {
     callback?: (event: TouchEvent | DeviceMotionEvent | DeviceOrientationEvent | Event) => void,
     preventDefault?: boolean,
     stopPropagation?: boolean,
+    passive?: boolean,
     fireGameEvent?: boolean,
     gameEventType?: string,
     throttle?: number
@@ -112,7 +113,7 @@ export class MobileInputManager {
         const handler = this.getHandler();
         this.userHandlers.set( opts.eventType, handler );
 
-        opts.target.addEventListener( opts.eventType, handler );
+        opts.target.addEventListener( opts.eventType, handler, { passive: opts.passive } );
     }
 
     unregisterMobileEvent( eventType: MobileEventType ) {
@@ -140,6 +141,7 @@ export class MobileInputManager {
                 : this.engine.pixiApp.view,
             preventDefault: false,
             stopPropagation: false,
+            passive: true,
             fireGameEvent: false,
             gameEventType: defaultGameEvents[userOptions.eventType],
             throttle: userOptions.eventType === 'deviceorientation' || userOptions.eventType === 'devicemotion'
@@ -230,12 +232,12 @@ export class MobileInputManager {
             this.mobileStatus.motion.interval = event.interval;
         }).bind(this);
 
-        this.statusTarget.addEventListener( 'touchstart', this.statusTouchHandler );
-        this.statusTarget.addEventListener( 'touchmove', this.statusTouchHandler );
-        this.statusTarget.addEventListener( 'touchend', this.statusTouchHandler );
-        this.statusTarget.addEventListener( 'touchcancel', this.statusTouchHandler );
-        window.addEventListener( 'deviceorientation', this.statusOrientationHandler );
-        window.addEventListener( 'devicemotion', this.statusMotionHandler );
+        this.statusTarget.addEventListener( 'touchstart', this.statusTouchHandler, { passive: true } );
+        this.statusTarget.addEventListener( 'touchmove', this.statusTouchHandler, { passive: true } );
+        this.statusTarget.addEventListener( 'touchend', this.statusTouchHandler, { passive: true } );
+        this.statusTarget.addEventListener( 'touchcancel', this.statusTouchHandler, { passive: true } );
+        window.addEventListener( 'deviceorientation', this.statusOrientationHandler, { passive: true } );
+        window.addEventListener( 'devicemotion', this.statusMotionHandler, { passive: true } );
     }
 
     private unregisterStatusEvents() {
