@@ -157,9 +157,8 @@ export class MobileInputManager {
         const handler = (event: Event) => {
             const now = Date.now();
             const opts = this.userOptions.get( event.type as MobileEventType );
-            const last = this.timestamps.get( opts.eventType )
-                ? this.timestamps.get( opts.eventType )
-                : now;
+            if ( !this.timestamps.get( opts.eventType ) ) this.timestamps.set( opts.eventType, now );
+            const last = this.timestamps.get( opts.eventType );
 
             if ( !opts ) return;
             if ( now - last < opts.throttle ) return;
