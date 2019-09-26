@@ -2,6 +2,7 @@
 import { GameProperties } from './gameprops';
 import { EventQueue } from './events';
 import { Component, ComponentClassName } from './component';
+import { log } from './log';
 
 
 export class Entity {
@@ -99,7 +100,12 @@ export class EntityManager {
     }
 
     getEntityComponentOfClass<C>(className: ComponentClassName<C>, forEntity: Entity): Component {
-        return this.componentsByClass.get( className.name )[forEntity.id];
+        const classComponents = this.componentsByClass.get( className.name );
+        if ( classComponents ) {
+            return classComponents[forEntity.id];
+        } else {
+            return undefined;
+        }
     }
 
     getEntityComponents(forEntity: Entity): Component[] {
@@ -124,7 +130,7 @@ export class EntityManager {
             }
         }
         this.entities = this.entities.filter((id => { return id != entity.id }));
-        console.log(`removed ${entity} from entityManager`);
+        log.info(`removed ${entity} from entityManager`);
     }
 
     removeAllEntities() {

@@ -7,6 +7,7 @@ export * from './gameprops';
 export * from './input-keyboard';
 export * from './input-mobile';
 export * from './input-mouse';
+export * from './log';
 export * from './resources';
 export * from './state';
 export * from './statetransition'
