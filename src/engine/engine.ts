@@ -35,11 +35,14 @@ export class Engine {
     private running: boolean;
     private pendingActions: (()=>void)[];
 
-    private _systemsUpdateAverageTime: number;
-    private _systemsRenderAverageTime: number;
-    private _systemsCleanupAverageTime: number;
-    private _loopIterationAverageTime: number;
-    private _averageFPS: number;
+    readonly statistics: {
+        systemsUpdateAverageTime: number,
+        systemsRenderAverageTime: number,
+        systemsCleanupAverageTime: number,
+        loopIterationAverageTime: number,
+        loopIntervalAverageTime: number,
+    };
+    
     private lastLoopIterationTimestamp: number
 
     constructor(properties: GameProperties) {
@@ -132,58 +135,38 @@ export class Engine {
     }
 
     private updateStatistics(timestamps: number[]) {
-        if ( this._systemsUpdateAverageTime ) {
-            this._systemsUpdateAverageTime = (this._systemsUpdateAverageTime + timestamps[2] - timestamps[1]) / 2;
+        if ( this.statistics.systemsUpdateAverageTime ) {
+            this.statistics.systemsUpdateAverageTime = (this.statistics.systemsUpdateAverageTime + timestamps[2] - timestamps[1]) / 2;
         } else {
-            this._systemsUpdateAverageTime = timestamps[2] - timestamps[1];
+            this.statistics.systemsUpdateAverageTime = timestamps[2] - timestamps[1];
         }
  
-        if ( this._systemsRenderAverageTime ) {
-            this._systemsRenderAverageTime = (this._systemsRenderAverageTime + timestamps[3] - timestamps[2]) / 2;
+        if ( this.statistics.systemsRenderAverageTime ) {
+            this.statistics.systemsRenderAverageTime = (this.statistics.systemsRenderAverageTime + timestamps[3] - timestamps[2]) / 2;
         } else {
-            this._systemsRenderAverageTime = timestamps[3] - timestamps[2];
+            this.statistics.systemsRenderAverageTime = timestamps[3] - timestamps[2];
         }
  
-        if ( this._systemsCleanupAverageTime ) {
-            this._systemsCleanupAverageTime = (this._systemsCleanupAverageTime + timestamps[4] - timestamps[3]) / 2;
+        if ( this.statistics.systemsCleanupAverageTime ) {
+            this.statistics.systemsCleanupAverageTime = (this.statistics.systemsCleanupAverageTime + timestamps[4] - timestamps[3]) / 2;
         } else {
-            this._systemsCleanupAverageTime = timestamps[4] - timestamps[3];
+            this.statistics.systemsCleanupAverageTime = timestamps[4] - timestamps[3];
         }
  
-        if ( this._loopIterationAverageTime ) {
-            this._loopIterationAverageTime = (this._loopIterationAverageTime + timestamps[5] - timestamps[0]) / 2;
+        if ( this.statistics.loopIterationAverageTime ) {
+            this.statistics.loopIterationAverageTime = (this.statistics.loopIterationAverageTime + timestamps[5] - timestamps[0]) / 2;
         } else {
-            this._loopIterationAverageTime = timestamps[5] - timestamps[0];
+            this.statistics.loopIterationAverageTime = timestamps[5] - timestamps[0];
         }
 
-        if ( this._averageFPS && this.lastLoopIterationTimestamp ) {
-            this._averageFPS = (this._averageFPS + timestamps[0] - this.lastLoopIterationTimestamp) / 2;
+        if ( this.statistics.loopIntervalAverageTime && this.lastLoopIterationTimestamp ) {
+            this.statistics.loopIntervalAverageTime = (this.statistics.loopIntervalAverageTime + (timestamps[0] - this.lastLoopIterationTimestamp)) / 2;
         } else {
-            this._averageFPS = timestamps[0] - this.lastLoopIterationTimestamp;;
+            this.statistics.loopIntervalAverageTime = timestamps[0];
         }
         
         this.lastLoopIterationTimestamp = timestamps[0];
     };
-
-    public get systemsUpdateAverageTime() {
-        return this._systemsUpdateAverageTime;
-    }
-
-    public get systemsRenderAverageTime() {
-        return this._systemsRenderAverageTime;
-    }
-
-    public get systemsCleanupAverageTime() {
-        return this._systemsCleanupAverageTime;
-    }
-
-    public get loopIterationAverageTime() {
-        return this._loopIterationAverageTime;
-    }
-
-    public get averageFPS() {
-        return this._averageFPS;
-    }
 
 
 }
