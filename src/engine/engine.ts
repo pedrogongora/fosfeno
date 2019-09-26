@@ -58,6 +58,13 @@ export class Engine {
         }
         this.running = false;
         this.pendingActions = [];
+        this.statistics = {
+            systemsUpdateAverageTime: undefined,
+            systemsRenderAverageTime: undefined,
+            systemsCleanupAverageTime: undefined,
+            loopIterationAverageTime: undefined,
+            loopIntervalAverageTime: undefined,
+        };
     }
 
     setTransitionSystem(stateTransitions: StateTransitionDescription, stateClassStore: any) {
