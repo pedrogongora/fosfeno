@@ -205,7 +205,7 @@ export class MotionSystem extends System {
             let follow = <FollowComponent> this.getEntityComponentOfClass(FollowComponent, entity);
             if (updated.has(follow.entity.id)) {
                 let follower = <PositionComponent> this.getEntityComponentOfClass(PositionComponent, entity);
-                let followed = <PositionComponent> this.getEntityComponentOfClass(PositionComponent, { id: follow.entity.id });
+                let followed = <PositionComponent> this.getEntityComponentOfClass(PositionComponent, new Entity( this.engine, follow.entity.id ));
                 if (followed.boardX < follower.boardX) {
                     follower.boardX--;
                 } else if (followed.boardX > follower.boardX) {
@@ -262,17 +262,17 @@ export class InputSystem extends System {
         });
         this.engine.input.keyboard.registerKeyEventHandler({
             key: 'p',
-            fireGameEvents: true,
+            publishGameEvents: true,
             keyupGameEventType: 'Pause'
         });
         this.engine.input.keyboard.registerKeyEventHandler({
             key: 'r',
-            fireGameEvents: true,
+            publishGameEvents: true,
             keyupGameEventType: 'Reset'
         });
         this.engine.input.keyboard.registerKeyEventHandler({
             key: 'f',
-            fireGameEvents: true,
+            publishGameEvents: true,
             keyupGameEventType: 'Fullscreen'
         });
     }
@@ -299,17 +299,17 @@ export class PauseInputSystem extends System {
     stage() {
         this.engine.input.keyboard.registerKeyEventHandler({
             key: 'p',
-            fireGameEvents: true,
+            publishGameEvents: true,
             keyupGameEventType: 'Pause'
         });
         this.engine.input.keyboard.registerKeyEventHandler({
             key: 'r',
-            fireGameEvents: true,
+            publishGameEvents: true,
             keyupGameEventType: 'Reset'
         });
         this.engine.input.keyboard.registerKeyEventHandler({
             key: 'f',
-            fireGameEvents: true,
+            publishGameEvents: true,
             keyupGameEventType: 'Fullscreen'
         });
     }

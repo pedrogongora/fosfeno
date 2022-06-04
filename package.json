@@ -9,7 +9,6 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "prepare": "npm run build",
     "build": "rm -rf dist/* && tsc -p tsconfig.build.json --outDir dist/ --declaration true",
     "build-demo": "webpack"
   },
@@ -19,9 +18,12 @@
     "typescript": "^3.5.3"
   },
   "dependencies": {
-    "howler": "^2.1.2",
     "@types/howler": "^2.1.1",
+    "@types/matter-js": "^0.10.7",
+    "howler": "^2.1.2",
+    "matter-js": "^0.14.2",
     "pixi.js": "^5.0.4",
+    "poly-decomp": "^0.3.0",
     "ts-loader": "^6.0.4",
     "webpack": "^4.39.2",
     "webpack-cli": "^3.3.7"
