@@ -27,17 +27,17 @@ export class ResourceLoader {
   private downloadSprites(progressCallback: () => void, callback: () => void) {
     let loader = PIXI.Loader.shared
     loader
-      .add(this.imageFilenames)
-      .onLoad.add((loader, resource) => {
-        progressCallback()
-        //console.log(`loading: ${resource.url}`);
-      })
-      .onError.add(() => {
-        throw new Error('On loading sprite')
-      })
-      .load(() => {
-        callback()
-      })
+    loader.add(this.imageFilenames)
+    loader.onLoad.add((loader, resource) => {
+      progressCallback()
+      console.log(`loading: ${resource.url}`);
+    })
+    loader.onError.add(() => {
+      throw new Error('On loading sprite')
+    })
+    loader.load(() => {
+      callback()
+    })
   }
 
   private downloadSounds(progressCallback: () => void, callback: () => void) {
