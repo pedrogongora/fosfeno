@@ -87,8 +87,8 @@ export class KeyboardInputManager {
 
   private registerStatusEvents() {
     this.statusDownHandler = ((event: KeyboardEvent) => {
+      const timestamp = Date.now()
       if (!this.keyDownStatus.keys[event.code]) {
-        const timestamp = Date.now()
         this.keyboardStatus.keys[event.code] = {
           down: true,
           timestamp: timestamp,
@@ -97,16 +97,24 @@ export class KeyboardInputManager {
           down: true,
           timestamp: timestamp,
         }
+      } else {
+        this.keyboardStatus.keys[event.code].down = true
+        this.keyboardStatus.keys[event.code].timestamp = timestamp
+        this.keyDownStatus.keys[event.code].down = true
+        this.keyDownStatus.keys[event.code].timestamp = timestamp
       }
     }).bind(this)
 
     this.statusUpHandler = ((event: KeyboardEvent) => {
       const timestamp = Date.now()
       this.keyboardStatus.keys[event.code] = {
-        down: true,
+        down: false,
         timestamp: timestamp,
       }
-      this.keyDownStatus.keys[event.code] = { down: true, timestamp: timestamp }
+      this.keyDownStatus.keys[event.code] = {
+        down: false,
+        timestamp: timestamp,
+      }
     }).bind(this)
 
     window.addEventListener('keydown', this.statusDownHandler)
