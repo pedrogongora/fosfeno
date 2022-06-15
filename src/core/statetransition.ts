@@ -113,7 +113,7 @@ export class StateTransitionSystem {
   private eventCallback(event: GameEvent) {
     if (this.hasNext(event)) {
       new Promise((resolve) => {
-        this.engine.stop(resolve)
+        this.engine.stop(resolve as () => void)
       }).then(() => {
         const [
           name,
